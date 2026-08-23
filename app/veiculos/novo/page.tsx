@@ -15,7 +15,7 @@ export default async function NovoVeiculoPage() {
       <div className="max-w-2xl mx-auto">
         <Link href="/" className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors mb-6">
           <ArrowLeft size={20} />
-          <span>Voltar para o Dashboard</span>
+          <span>Voltar ao Kanban</span>
         </Link>
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">

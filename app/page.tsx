@@ -1,18 +1,29 @@
 import { db } from "@/db";
 import { status as statusTable, veiculos as veiculosTable } from "@/db/schema";
-import { asc, desc } from "drizzle-orm";
-import { Plus, LayoutDashboard, Search, Filter, MoreVertical, Clock } from "lucide-react";
+import { asc, desc, ilike, or } from "drizzle-orm";
+import { Plus, LayoutDashboard, MoreVertical, Clock } from "lucide-react"; 
 import { cn, statusStyles } from "@/lib/utils";
 import Link from "next/link";
 import KanbanBoard from "@/components/KanbanBoard";
-import { ColunaCanvas, VeiculoTabela, VeiculoCanvas } from "@/types/kanban";
+import { SearchVeiculos } from "@/components/SearchVeiculos";
+import { ColunaCanvas, VeiculoTabela, VeiculoCanvas, DbFoto } from "@/types/kanban";
+import { Suspense } from "react";
 
-async function getDados() {
-  // 1. Busca dados do Kanban
+async function getDados(searchTerm?: string) {
+  const filter = searchTerm 
+    ? or(
+        ilike(veiculosTable.placa, `%${searchTerm}%`),
+        ilike(veiculosTable.modelo, `%${searchTerm}%`),
+        ilike(veiculosTable.cliente, `%${searchTerm}%`)
+      )
+    : undefined;
+
+  // 1. Busca dados do Kanban (Filtrando os veículos internos também)
   const resKanban = await db.query.status.findMany({
     orderBy: [asc(statusTable.ordem)],
     with: {
       veiculos: {
+        where: filter, // O Kanban agora também filtra!
         with: { fotos: true },
       },
     },
@@ -20,12 +31,13 @@ async function getDados() {
 
   // 2. Busca dados da Tabela
   const resTabela = await db.query.veiculos.findMany({
+    where: filter,
     limit: 10,
     orderBy: [desc(veiculosTable.id)],
     with: { status: true }
   });
 
-  // 3. Mapeamento Estrito para Serialização (Date -> String)
+  // 3. Mapeamento Estrito (Date -> String)
   const colunas: ColunaCanvas[] = resKanban.map((col) => ({
     id: col.id,
     nome: col.nome,
@@ -37,13 +49,15 @@ async function getDados() {
       cliente: v.cliente,
       status_id: v.status_id,
       observacoes: v.observacoes,
-      data_entrada: v.data_entrada.toString(),
-      data_prevista_entrega: v.data_prevista_entrega ? v.data_prevista_entrega.toString() : null,
-      fotos: v.fotos.map(f => ({
+      data_entrada: typeof v.data_entrada === 'string' ? v.data_entrada : new Date(v.data_entrada).toISOString(),
+      data_prevista_entrega: v.data_prevista_entrega 
+        ? (typeof v.data_prevista_entrega === 'string' ? v.data_prevista_entrega : new Date(v.data_prevista_entrega).toISOString()) 
+        : null,
+      fotos: v.fotos.map((f): DbFoto => ({
         id: f.id,
         veiculo_id: f.veiculo_id,
         url: f.url,
-        created_at: f.created_at
+        created_at: f.created_at 
       }))
     }))
   }));
@@ -55,7 +69,7 @@ async function getDados() {
     cliente: v.cliente,
     status_id: v.status_id,
     observacoes: v.observacoes,
-    data_entrada: v.data_entrada.toString(),
+    data_entrada: typeof v.data_entrada === 'string' ? v.data_entrada : new Date(v.data_entrada).toISOString(),
     status: {
       id: v.status.id,
       nome: v.status.nome,
@@ -66,22 +80,27 @@ async function getDados() {
   return { colunas, ultimosVeiculos };
 }
 
-export default async function DashboardPage() {
-  const { colunas, ultimosVeiculos } = await getDados();
+interface PageProps {
+  searchParams: Promise<{ search?: string }>;
+}
+
+export default async function DashboardPage({ searchParams }: PageProps) {
+  const { search } = await searchParams;
+  const { colunas, ultimosVeiculos } = await getDados(search);
 
   return (
     <main className="min-h-screen bg-[#F8FAFC] p-4 md:p-6 lg:p-8">
-      <div className="max-w-[1800px] mx-auto space-y-8">
+      <div className="max-w-[1800px] mx-auto space-y-10">
         
         {/* HEADER */}
-        <header className="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+        <header className="flex justify-between items-center bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
           <div className="flex items-center gap-4">
              <Link 
                 href="/dashboard" 
-                className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-100 hover:bg-slate-100 transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition-all"
               >
                 <LayoutDashboard size={18} className="text-slate-500" />
-                <span className="text-sm font-bold text-slate-600 uppercase">Dashboard</span>
+                <span className="text-xs font-black text-slate-600 uppercase tracking-widest">Estatísticas</span>
              </Link>
           </div>
 
@@ -91,7 +110,7 @@ export default async function DashboardPage() {
 
           <Link 
             href="/veiculos/novo" 
-            className="bg-[#2563EB] hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg active:scale-95"
+            className="bg-[#2563EB] hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black uppercase text-xs flex items-center gap-2 transition-all shadow-lg active:scale-95"
           >
             <Plus size={20} strokeWidth={3} />
             Novo veículo
@@ -99,31 +118,32 @@ export default async function DashboardPage() {
         </header>
 
         {/* KANBAN BOARD */}
-        <KanbanBoard 
-          key={JSON.stringify(colunas)} 
-          initialData={colunas} 
-        />
+        <section className="space-y-4">
+          <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Fluxo de Trabalho</h2>
+          <KanbanBoard 
+            key={JSON.stringify(colunas)} 
+            initialData={colunas} 
+          />
+        </section>
 
         {/* TABELA DE ÚLTIMOS VEÍCULOS */}
-        <section className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-200">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
-            <h2 className="text-xl font-black text-slate-800 tracking-tight uppercase">Últimos veículos</h2>
-            <div className="flex gap-3 w-full md:w-auto">
-              <div className="relative flex-1 md:w-[350px]">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="Pesquisar..." 
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+        <section className="bg-white p-8 rounded-[40px] shadow-sm border border-slate-200">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
+            <h2 className="text-2xl font-black text-slate-900 tracking-tighter uppercase italic">
+              {search ? `Resultados: ${search}` : "Últimos veículos"}
+            </h2>
+            
+            <div className="w-full lg:w-auto">
+              <Suspense fallback={<div className="h-12 w-64 bg-slate-100 animate-pulse rounded-2xl" />}>
+                <SearchVeiculos />
+              </Suspense>
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-slate-100">
+          <div className="overflow-x-auto rounded-3xl border border-slate-100">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
+                <tr className="bg-slate-50/50 border-b border-slate-100">
                   <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Placa</th>
                   <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Modelo</th>
                   <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cliente</th>
@@ -134,9 +154,9 @@ export default async function DashboardPage() {
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {ultimosVeiculos.map((v) => (
-                  <tr key={v.id} className="hover:bg-blue-50/20 transition-all group">
+                  <tr key={v.id} className="hover:bg-blue-50/30 transition-all group">
                     <td className="p-5">
-                      <Link href={`/veiculos/${v.id}`} className="font-black text-lg text-slate-800 uppercase tracking-tighter">
+                      <Link href={`/veiculos/${v.id}`} className="font-black text-xl text-slate-800 uppercase tracking-tighter hover:text-blue-600 transition-colors">
                         {v.placa}
                       </Link>
                     </td>
@@ -158,9 +178,9 @@ export default async function DashboardPage() {
                         {v.status.nome}
                       </span>
                     </td>
-                    <td className="p-5 text-right">
+                    <td className="p-5 text-right text-slate-300">
                       <Link href={`/veiculos/${v.id}`}>
-                         <MoreVertical size={20} className="text-slate-300 inline group-hover:text-blue-600 transition-colors" />
+                         <MoreVertical size={20} className="inline group-hover:text-blue-600 transition-colors" />
                       </Link>
                     </td>
                   </tr>
@@ -168,6 +188,14 @@ export default async function DashboardPage() {
               </tbody>
             </table>
           </div>
+
+          {ultimosVeiculos.length === 0 && (
+            <div className="py-24 text-center border-2 border-dashed border-slate-50 rounded-3xl mt-4">
+              <p className="text-slate-300 font-black uppercase tracking-[0.2em] italic">
+                Nenhum veículo encontrado
+              </p>
+            </div>
+          )}
         </section>
       </div>
     </main>
