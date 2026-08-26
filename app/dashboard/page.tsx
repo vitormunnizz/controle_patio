@@ -61,20 +61,6 @@ export default async function AnalyticsPage() {
             bgColor="bg-blue-50" 
           />
           <StatCard 
-            title="Em Manutenção" 
-            value={emManutencao} 
-            icon={<Wrench size={24} />} 
-            color="text-green-600" 
-            bgColor="bg-green-50" 
-          />
-          <StatCard 
-            title="Aguardando Aprovação" 
-            value={aguardandoAprovacao} 
-            icon={<Clock size={24} />} 
-            color="text-purple-600" 
-            bgColor="bg-purple-50" 
-          />
-          <StatCard 
             title="Entregues" 
             value={entregues} 
             icon={<CheckCircle2 size={24} />} 
