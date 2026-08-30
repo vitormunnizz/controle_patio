@@ -1,17 +1,22 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-.custom-scrollbar::-webkit-scrollbar {
-  height: 8px;
+@theme {
+  /* Cores Oficiais JC Pneus */
+  --color-jc-blue: #0047BB;
+  --color-jc-yellow: #FFD700;
+  --color-jc-navy: #001F5C;
+  
+  /* Arredondamentos personalizados */
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
 }
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+
+/* O restante do seu CSS (como as scrollbars que fizemos antes) pode vir abaixo */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #E2E8F0;
+  background: #cbd5e1;
   border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #CBD5E1;
 }

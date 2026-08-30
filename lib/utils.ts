@@ -5,12 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const statusStyles: Record<string, { bg: string, border: string, text: string }> = {
-  "Recebido": { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-700" },
-  "Aguardando orçamento": { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-700" },
-  "Aguardando aprovação": { bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-700" },
-  "Aguardando peças": { bg: "bg-red-50", border: "border-red-200", text: "text-red-700" },
-  "Em manutenção": { bg: "bg-green-50", border: "border-green-200", text: "text-green-700" },
-  "Finalizado": { bg: "bg-teal-50", border: "border-teal-200", text: "text-teal-700" },
-  "Entregue": { bg: "bg-gray-50", border: "border-gray-200", text: "text-gray-700" },
+export const statusStyles: Record<string, { bg: string, border: string, text: string, dot: string }> = {
+  "Recebido": { bg: "bg-blue-50", border: "border-blue-200", text: "text-[#0047BB]", dot: "bg-[#0047BB]" },
+  "Aguardando orçamento": { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-700", dot: "bg-orange-500" },
+  "Aguardando aprovação": { bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-700", dot: "bg-purple-500" },
+  "Aguardando peças": { bg: "bg-red-50", border: "border-red-200", text: "text-red-700", dot: "bg-red-500" },
+  "Em manutenção": { bg: "bg-yellow-50", border: "border-[#FFD700]", text: "text-yellow-800", dot: "bg-[#FFD700]" },
+  "Finalizado": { bg: "bg-green-50", border: "border-green-200", text: "text-green-700", dot: "bg-green-500" },
+  "Entregue": { bg: "bg-slate-100", border: "border-slate-300", text: "text-slate-900", dot: "bg-slate-900" },
 };
