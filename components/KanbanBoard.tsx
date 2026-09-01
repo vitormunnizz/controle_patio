@@ -1,4 +1,5 @@
 "use client";
+
 import { 
   DndContext, 
   DragEndEvent, 
@@ -6,7 +7,7 @@ import {
   useSensor, 
   useSensors, 
   TouchSensor,
-  closestCorners
+  closestCorners 
 } from "@dnd-kit/core";
 import { KanbanColumn } from "./KanbanColumn";
 import { KanbanCard } from "./KanbanCard";
@@ -15,10 +16,9 @@ import { useState, useId } from "react";
 import { ColunaCanvas, VeiculoCanvas } from "@/types/kanban";
 
 export default function KanbanBoard({ initialData }: { initialData: ColunaCanvas[] }) {
+  // O useId é suficiente para resolver o erro de aria-describedby no Next.js 15
   const dndId = useId();
   
-  // O estado só é definido uma vez. Se o dado mudar no banco, 
-  // o componente pai (page.tsx) vai destruir e recriar este componente usando a KEY.
   const [data, setData] = useState<ColunaCanvas[]>(initialData);
 
   const sensors = useSensors(
@@ -29,12 +29,11 @@ export default function KanbanBoard({ initialData }: { initialData: ColunaCanvas
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over) return;
-
+    
     const veiculoId = active.data.current?.veiculoId as number;
     const novoStatusId = over.data.current?.statusId as number;
 
     if (veiculoId && novoStatusId) {
-      // Lógica Otimista: Move na tela na hora
       const clonedData: ColunaCanvas[] = JSON.parse(JSON.stringify(data));
       let veiculoParaMover: VeiculoCanvas | undefined;
 
@@ -64,14 +63,21 @@ export default function KanbanBoard({ initialData }: { initialData: ColunaCanvas
       collisionDetection={closestCorners} 
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
-        {data.map((coluna: ColunaCanvas) => (
-          <KanbanColumn key={coluna.id} coluna={coluna}>
-            {coluna.veiculos.map((veiculo: VeiculoCanvas) => (
-              <KanbanCard key={veiculo.id} veiculo={veiculo} />
-            ))}
-          </KanbanColumn>
-        ))}
+      {/* 
+          - overflow-x-auto: Permite scroll lateral mas...
+          - no-scrollbar: Esconde a barra visual (requer classe no globals.css)
+      */}
+      <div className="w-full overflow-x-auto no-scrollbar pb-4">
+        {/* min-w-max: Garante que as colunas mantenham a largura e não apertem uma na outra */}
+        <div className="flex gap-2 min-w-max pr-4">
+          {data.map((coluna: ColunaCanvas) => (
+            <KanbanColumn key={coluna.id} coluna={coluna}>
+              {coluna.veiculos.map((veiculo: VeiculoCanvas) => (
+                <KanbanCard key={veiculo.id} veiculo={veiculo} />
+              ))}
+            </KanbanColumn>
+          ))}
+        </div>
       </div>
     </DndContext>
   );

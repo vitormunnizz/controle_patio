@@ -1,25 +1,18 @@
 "use client";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { Eye, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { VeiculoCanvas } from "@/types/kanban";
 
-interface KanbanCardProps {
-  veiculo: VeiculoCanvas;
-}
-
-export function KanbanCard({ veiculo }: KanbanCardProps) {
+export function KanbanCard({ veiculo }: { veiculo: VeiculoCanvas }) {
   const router = useRouter();
-  
-  // Configuração do dnd-kit
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `veiculo-${veiculo.id}`,
     data: { veiculoId: veiculo.id }
   });
 
-  // Estilo para o movimento do arraste
   const style = {
     transform: CSS.Translate.toString(transform),
     opacity: isDragging ? 0.3 : 1,
@@ -27,60 +20,47 @@ export function KanbanCard({ veiculo }: KanbanCardProps) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative touch-none group">
-      {/* 
-        Separamos os listeners (clique para arrastar) do botão de detalhes 
-        para evitar que a página mude sozinha enquanto você arrasta 
-      */}
+    <div ref={setNodeRef} style={style} className="relative touch-none">
       <div 
         {...listeners} 
         {...attributes}
-        className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 group-hover:border-blue-300 transition-all cursor-grab active:cursor-grabbing"
+        className="bg-white p-3 rounded-xl shadow-sm border border-slate-100 group hover:border-jc-blue/30 transition-all cursor-grab active:cursor-grabbing"
       >
-        <div className="flex justify-between items-start mb-3">
-          <span className="font-black text-xl text-slate-800 uppercase tracking-tighter leading-none">
+        <div className="flex justify-between items-center mb-2">
+          <span className="font-black text-sm text-slate-800 uppercase tracking-tighter leading-none">
             {veiculo.placa}
           </span>
-          
-          {/* Botão de Detalhes - Usamos onPointerDown para impedir o arraste aqui */}
           <button 
             onPointerDown={(e) => e.stopPropagation()} 
             onClick={() => router.push(`/veiculos/${veiculo.id}`)}
-            className="p-1.5 bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-            title="Ver detalhes"
+            className="px-2 py-0.5 bg-jc-navy text-jc-yellow hover:bg-jc-blue hover:text-white rounded-md transition-all text-[8px] font-black uppercase tracking-widest shadow-sm"
           >
-            <Eye size={16} />
+            Editar
           </button>
         </div>
 
-        <div className="space-y-1 pointer-events-none">
-          <p className="text-[14px] font-bold text-slate-600 uppercase leading-tight">
+        <div className="space-y-0.5 mb-3 pointer-events-none">
+          <p className="text-[11px] font-bold text-slate-600 uppercase leading-tight truncate">
             {veiculo.modelo}
           </p>
-          <p className="text-[13px] text-slate-400 font-medium">
+          <p className="text-[10px] text-slate-400 font-medium italic truncate">
             {veiculo.cliente}
           </p>
         </div>
 
-        <div className="mt-5 pt-4 border-t border-slate-50 flex justify-between items-center pointer-events-none">
-          <div className="flex items-center gap-1.5 text-slate-400">
-            <Clock size={12} />
-            <span className="text-[11px] font-bold italic">
-              {new Date(veiculo.data_entrada).toLocaleDateString('pt-BR')}
+        <div className="pt-2 border-t border-slate-50 flex justify-between items-center pointer-events-none">
+          <div className="flex items-center gap-1 text-slate-300">
+            <Clock size={10} />
+            <span className="text-[9px] font-bold">
+              {new Date(veiculo.data_entrada).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
             </span>
           </div>
-          
-          <div className="w-12 h-8 bg-slate-50 rounded-lg relative overflow-hidden border border-slate-100">
-            {veiculo.fotos && veiculo.fotos[0] ? (
-              <Image 
-                src={veiculo.fotos[0].url} 
-                fill 
-                className="object-cover" 
-                alt="Foto do veículo" 
-              />
+          <div className="w-10 h-7 bg-slate-100 rounded-lg relative overflow-hidden border border-slate-50">
+            {veiculo.fotos?.[0] ? (
+              <Image src={veiculo.fotos[0].url} fill className="object-cover" alt="img" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-[8px] text-slate-300 font-black uppercase italic">
-                JC
+              <div className="w-full h-full flex items-center justify-center bg-slate-50">
+                <span className="text-[6px] text-slate-300 font-black">JC</span>
               </div>
             )}
           </div>

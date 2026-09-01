@@ -1,15 +1,21 @@
 import { db } from "@/db";
 import { status as statusTable, veiculos as veiculosTable } from "@/db/schema";
 import { asc, desc, ilike, or } from "drizzle-orm";
-import { Plus, LayoutDashboard, MoreVertical, Clock } from "lucide-react"; 
+import { Plus, LayoutDashboard, Clock } from "lucide-react"; 
 import { cn, statusStyles } from "@/lib/utils";
 import Link from "next/link";
+import Image from "next/image";
 import KanbanBoard from "@/components/KanbanBoard";
 import { SearchVeiculos } from "@/components/SearchVeiculos";
 import { ColunaCanvas, VeiculoTabela, VeiculoCanvas, DbFoto } from "@/types/kanban";
 import { Suspense } from "react";
 
+/**
+ * Função para buscar e formatar os dados do Banco de Dados
+ *searchTerm: termo de busca vindo da URL
+ */
 async function getDados(searchTerm?: string) {
+  // Define o filtro de busca (Placa, Modelo ou Cliente)
   const filter = searchTerm 
     ? or(
         ilike(veiculosTable.placa, `%${searchTerm}%`),
@@ -18,18 +24,18 @@ async function getDados(searchTerm?: string) {
       )
     : undefined;
 
-  // 1. Busca dados do Kanban (Filtrando os veículos internos também)
+  // 1. Busca dados para o Kanban (Filtrado)
   const resKanban = await db.query.status.findMany({
     orderBy: [asc(statusTable.ordem)],
     with: {
       veiculos: {
-        where: filter, // O Kanban agora também filtra!
+        where: filter,
         with: { fotos: true },
       },
     },
   });
 
-  // 2. Busca dados da Tabela
+  // 2. Busca os últimos 10 veículos para a Tabela (Filtrado)
   const resTabela = await db.query.veiculos.findMany({
     where: filter,
     limit: 10,
@@ -37,7 +43,7 @@ async function getDados(searchTerm?: string) {
     with: { status: true }
   });
 
-  // 3. Mapeamento Estrito (Date -> String)
+  // 3. Serialização Manual (Converte Objetos Date em Strings para o Cliente)
   const colunas: ColunaCanvas[] = resKanban.map((col) => ({
     id: col.id,
     nome: col.nome,
@@ -49,15 +55,13 @@ async function getDados(searchTerm?: string) {
       cliente: v.cliente,
       status_id: v.status_id,
       observacoes: v.observacoes,
-      data_entrada: typeof v.data_entrada === 'string' ? v.data_entrada : new Date(v.data_entrada).toISOString(),
-      data_prevista_entrega: v.data_prevista_entrega 
-        ? (typeof v.data_prevista_entrega === 'string' ? v.data_prevista_entrega : new Date(v.data_prevista_entrega).toISOString()) 
-        : null,
+      data_entrada: v.data_entrada.toString(),
+      data_prevista_entrega: v.data_prevista_entrega ? v.data_prevista_entrega.toString() : null,
       fotos: v.fotos.map((f): DbFoto => ({
         id: f.id,
         veiculo_id: f.veiculo_id,
         url: f.url,
-        created_at: f.created_at 
+        created_at: f.created_at
       }))
     }))
   }));
@@ -69,7 +73,7 @@ async function getDados(searchTerm?: string) {
     cliente: v.cliente,
     status_id: v.status_id,
     observacoes: v.observacoes,
-    data_entrada: typeof v.data_entrada === 'string' ? v.data_entrada : new Date(v.data_entrada).toISOString(),
+    data_entrada: v.data_entrada.toString(),
     status: {
       id: v.status.id,
       nome: v.status.nome,
@@ -80,107 +84,130 @@ async function getDados(searchTerm?: string) {
   return { colunas, ultimosVeiculos };
 }
 
-interface PageProps {
-  searchParams: Promise<{ search?: string }>;
-}
-
-export default async function DashboardPage({ searchParams }: PageProps) {
+export default async function DashboardPage({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ search?: string }> 
+}) {
   const { search } = await searchParams;
   const { colunas, ultimosVeiculos } = await getDados(search);
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC] p-4 md:p-6 lg:p-8">
-      <div className="max-w-[1800px] mx-auto space-y-10">
+    <main className="min-h-screen bg-slate-50 p-4 md:p-6 font-sans antialiased">
+      <div className="max-w-[1600px] mx-auto space-y-8">
         
-        {/* HEADER */}
-        <header className="flex justify-between items-center bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
-          <div className="flex items-center gap-4">
+        {/* HEADER PREMIUM - 3 COLUNAS */}
+        <header className="grid grid-cols-3 items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+          
+          {/* Coluna 1: Dashboard Geral */}
+          <div>
              <Link 
                 href="/dashboard" 
-                className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition-all"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl hover:bg-jc-navy hover:text-white transition-all group border border-slate-100 shadow-sm"
               >
-                <LayoutDashboard size={18} className="text-slate-500" />
-                <span className="text-xs font-black text-slate-600 uppercase tracking-widest">Estatísticas</span>
+                <LayoutDashboard size={16} className="text-jc-blue group-hover:text-jc-yellow" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Estatísticas</span>
              </Link>
           </div>
 
-          <h1 className="text-3xl font-black text-[#1E293B] tracking-tighter uppercase italic">
-            JC Pneus
-          </h1>
+          {/* Coluna 2: Logo Centralizada */}
+          <div className="flex justify-center">
+            <Link href="/">
+              <Image 
+                src="/jc.png" 
+                alt="JC Pneus Service" 
+                width={140} 
+                height={55} 
+                className="object-contain" 
+                priority 
+              />
+            </Link>
+          </div>
 
-          <Link 
-            href="/veiculos/novo" 
-            className="bg-[#2563EB] hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black uppercase text-xs flex items-center gap-2 transition-all shadow-lg active:scale-95"
-          >
-            <Plus size={20} strokeWidth={3} />
-            Novo veículo
-          </Link>
+          {/* Coluna 3: Novo Veículo */}
+          <div className="flex justify-end">
+            <Link 
+              href="/veiculos/novo" 
+              className="bg-jc-yellow hover:bg-yellow-400 text-jc-navy px-5 py-2.5 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center gap-2 transition-all shadow-md active:scale-95 border-b-2 border-yellow-600"
+            >
+              <Plus size={16} strokeWidth={4} />
+              Novo veículo
+            </Link>
+          </div>
         </header>
 
-        {/* KANBAN BOARD */}
+        {/* SEÇÃO KANBAN (FLUXO) */}
         <section className="space-y-4">
-          <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Fluxo de Trabalho</h2>
+          <div className="flex items-center gap-2 ml-1">
+            <div className="h-4 w-1 bg-jc-yellow rounded-full" />
+            <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Fluxo de Oficina</h2>
+          </div>
+          
+          {/* 
+            Usamos JSON.stringify como key para que o KanbanBoard resete 
+            seu estado interno automaticamente ao detectar mudanças no banco 
+          */}
           <KanbanBoard 
             key={JSON.stringify(colunas)} 
             initialData={colunas} 
           />
         </section>
 
-        {/* TABELA DE ÚLTIMOS VEÍCULOS */}
-        <section className="bg-white p-8 rounded-[40px] shadow-sm border border-slate-200">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
-            <h2 className="text-2xl font-black text-slate-900 tracking-tighter uppercase italic">
-              {search ? `Resultados: ${search}` : "Últimos veículos"}
-            </h2>
+        {/* SEÇÃO TABELA (ÚLTIMOS VEÍCULOS) */}
+        <section className="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-4 mb-8">
+            <div className="flex flex-col">
+              <h2 className="text-xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">
+                {search ? `Busca: ${search}` : "Últimos Veículos"}
+              </h2>
+            </div>
             
             <div className="w-full lg:w-auto">
-              <Suspense fallback={<div className="h-12 w-64 bg-slate-100 animate-pulse rounded-2xl" />}>
+              <Suspense fallback={<div className="h-10 w-64 bg-slate-100 animate-pulse rounded-xl" />}>
                 <SearchVeiculos />
               </Suspense>
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-3xl border border-slate-100">
+          <div className="overflow-x-auto rounded-2xl border border-slate-50">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50/50 border-b border-slate-100">
-                  <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Placa</th>
-                  <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Modelo</th>
-                  <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cliente</th>
-                  <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Entrada</th>
-                  <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                  <th className="p-5"></th>
+                <tr className="bg-slate-50/50">
+                  <th className="p-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Placa</th>
+                  <th className="p-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Modelo / Marca</th>
+                  <th className="p-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">Cliente</th>
+                  <th className="p-4 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
+                  <th className="p-4"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {ultimosVeiculos.map((v) => (
-                  <tr key={v.id} className="hover:bg-blue-50/30 transition-all group">
-                    <td className="p-5">
-                      <Link href={`/veiculos/${v.id}`} className="font-black text-xl text-slate-800 uppercase tracking-tighter hover:text-blue-600 transition-colors">
-                        {v.placa}
-                      </Link>
+                  <tr key={v.id} className="hover:bg-slate-50/50 transition-all group">
+                    <td className="p-4 font-black text-base text-jc-blue uppercase tracking-tighter">
+                      {v.placa}
                     </td>
-                    <td className="p-5 text-sm font-bold text-slate-600 uppercase">{v.modelo}</td>
-                    <td className="p-5 text-sm text-slate-500 font-medium">{v.cliente}</td>
-                    <td className="p-5 text-sm text-slate-400 font-bold">
-                      <div className="flex items-center gap-2">
-                        <Clock size={14} />
-                        {new Date(v.data_entrada).toLocaleDateString('pt-BR')}
+                    <td className="p-4 text-xs font-bold text-slate-600 uppercase">
+                      {v.modelo}
+                    </td>
+                    <td className="p-4 text-xs text-slate-400 font-medium">
+                      {v.cliente}
+                    </td>
+                    <td className="p-4">
+                      <div className={cn(
+                        "mx-auto w-fit px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2 border shadow-sm",
+                        statusStyles[v.status.nome]?.bg || "bg-slate-100",
+                        statusStyles[v.status.nome]?.text || "text-slate-500"
+                      )}>
+                        <div className={cn("w-1.5 h-1.5 rounded-full", statusStyles[v.status.nome]?.dot)} />
+                        {v.status.nome}
                       </div>
                     </td>
-                    <td className="p-5">
-                      <span className={cn(
-                        "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm border",
-                        statusStyles[v.status.nome]?.bg || "bg-slate-100",
-                        statusStyles[v.status.nome]?.text || "text-slate-500",
-                        statusStyles[v.status.nome]?.border || "border-slate-200"
-                      )}>
-                        {v.status.nome}
-                      </span>
-                    </td>
-                    <td className="p-5 text-right text-slate-300">
-                      <Link href={`/veiculos/${v.id}`}>
-                         <MoreVertical size={20} className="inline group-hover:text-blue-600 transition-colors" />
+                    <td className="p-4 text-right">
+                      <Link 
+                        href={`/veiculos/${v.id}`} 
+                        className="inline-flex px-3 py-1.5 bg-slate-50 text-slate-400 hover:text-jc-blue hover:bg-blue-50 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border border-transparent hover:border-blue-100"
+                      >
+                         Editar
                       </Link>
                     </td>
                   </tr>
@@ -191,8 +218,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
           {ultimosVeiculos.length === 0 && (
             <div className="py-24 text-center border-2 border-dashed border-slate-50 rounded-3xl mt-4">
-              <p className="text-slate-300 font-black uppercase tracking-[0.2em] italic">
-                Nenhum veículo encontrado
+              <p className="text-slate-300 font-black uppercase tracking-[0.3em] italic">
+                Nenhum registro encontrado
               </p>
             </div>
           )}
