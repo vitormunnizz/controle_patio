@@ -18,22 +18,28 @@ export async function atualizarVeiculo(id: number, formData: FormData) {
     observacoes: formData.get("observacoes") as string,
   }).where(eq(veiculos.id, id));
 
-  // Limpa o cache para as mudanças aparecerem no Kanban e na Ficha
   revalidatePath("/");
   revalidatePath(`/veiculos/${id}`);
-  
-  // Redireciona para a tela principal
   redirect("/");
 }
 
-// SALVAR O LINK DA FOTO (Chamada após o upload no Supabase)
+export async function excluirVeiculo(id: number) {
+  // 1. Deleta o veículo do banco (Fotos no banco somem pelo CASCADE)
+  await db.delete(veiculos).where(eq(veiculos.id, id));
+  
+  // 2. Atualiza a lista da página inicial
+  revalidatePath("/");
+  
+  // 3. Redireciona para o Dashboard principal
+  redirect("/");
+}
+
+// SALVAR O LINK DA FOTO
 export async function salvarFotoNoBanco(veiculoId: number, url: string) {
   await db.insert(fotos).values({
     veiculo_id: veiculoId,
     url: url,
   });
-
-  // Atualiza as telas para a foto nova aparecer na hora
   revalidatePath(`/veiculos/${veiculoId}`);
   revalidatePath("/");
 }
@@ -41,8 +47,6 @@ export async function salvarFotoNoBanco(veiculoId: number, url: string) {
 // DELETAR FOTO
 export async function deletarFoto(fotoId: number, veiculoId: number) {
   await db.delete(fotos).where(eq(fotos.id, fotoId));
-  
-  // Atualiza a galeria após excluir
   revalidatePath(`/veiculos/${veiculoId}`);
   revalidatePath("/");
 }
