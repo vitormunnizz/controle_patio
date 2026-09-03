@@ -1,14 +1,5 @@
 "use client";
-
-import { 
-  DndContext, 
-  DragEndEvent, 
-  PointerSensor, 
-  useSensor, 
-  useSensors, 
-  TouchSensor,
-  closestCorners 
-} from "@dnd-kit/core";
+import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors, TouchSensor, closestCorners } from "@dnd-kit/core";
 import { KanbanColumn } from "./KanbanColumn";
 import { KanbanCard } from "./KanbanCard";
 import { atualizarStatusVeiculo } from "@/app/actions";
@@ -16,9 +7,7 @@ import { useState, useId } from "react";
 import { ColunaCanvas, VeiculoCanvas } from "@/types/kanban";
 
 export default function KanbanBoard({ initialData }: { initialData: ColunaCanvas[] }) {
-  // O useId é suficiente para resolver o erro de aria-describedby no Next.js 15
   const dndId = useId();
-  
   const [data, setData] = useState<ColunaCanvas[]>(initialData);
 
   const sensors = useSensors(
@@ -29,21 +18,16 @@ export default function KanbanBoard({ initialData }: { initialData: ColunaCanvas
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over) return;
-    
     const veiculoId = active.data.current?.veiculoId as number;
     const novoStatusId = over.data.current?.statusId as number;
 
     if (veiculoId && novoStatusId) {
       const clonedData: ColunaCanvas[] = JSON.parse(JSON.stringify(data));
       let veiculoParaMover: VeiculoCanvas | undefined;
-
       clonedData.forEach(col => {
         const idx = col.veiculos.findIndex(v => v.id === veiculoId);
-        if (idx !== -1) {
-          veiculoParaMover = col.veiculos.splice(idx, 1)[0];
-        }
+        if (idx !== -1) veiculoParaMover = col.veiculos.splice(idx, 1)[0];
       });
-
       if (veiculoParaMover) {
         const colDestino = clonedData.find(c => c.id === novoStatusId);
         if (colDestino) {
@@ -57,27 +41,16 @@ export default function KanbanBoard({ initialData }: { initialData: ColunaCanvas
   }
 
   return (
-    <DndContext 
-      id={dndId} 
-      sensors={sensors} 
-      collisionDetection={closestCorners} 
-      onDragEnd={handleDragEnd}
-    >
-      {/* 
-          - overflow-x-auto: Permite scroll lateral mas...
-          - no-scrollbar: Esconde a barra visual (requer classe no globals.css)
-      */}
-      <div className="w-full overflow-x-auto no-scrollbar pb-4">
-        {/* min-w-max: Garante que as colunas mantenham a largura e não apertem uma na outra */}
-        <div className="flex gap-2 min-w-max pr-4">
-          {data.map((coluna: ColunaCanvas) => (
-            <KanbanColumn key={coluna.id} coluna={coluna}>
-              {coluna.veiculos.map((veiculo: VeiculoCanvas) => (
-                <KanbanCard key={veiculo.id} veiculo={veiculo} />
-              ))}
-            </KanbanColumn>
-          ))}
-        </div>
+    <DndContext id={dndId} sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+      {/* Força 7 colunas em telas médias/grandes e remove barras de rolagem lateral */}
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-1 w-full overflow-hidden">
+        {data.map((coluna: ColunaCanvas) => (
+          <KanbanColumn key={coluna.id} coluna={coluna}>
+            {coluna.veiculos.map((veiculo: VeiculoCanvas) => (
+              <KanbanCard key={veiculo.id} veiculo={veiculo} />
+            ))}
+          </KanbanColumn>
+        ))}
       </div>
     </DndContext>
   );

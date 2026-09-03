@@ -12,22 +12,22 @@ export function KanbanColumn({ coluna, children }: { coluna: ColunaCanvas, child
   const style = statusStyles[coluna.nome] || statusStyles["Recebido"];
 
   return (
-    // Reduzido para min-w-[200px]
     <div 
       ref={setNodeRef} 
+      // Largura reduzida para caber tudo em uma tela
       className={cn(
-        "min-w-[200px] max-w-[220px] flex flex-col p-1 transition-all duration-200",
-        isOver ? "bg-jc-blue/5 rounded-2xl ring-1 ring-jc-blue/20" : ""
+        "min-w-[160px] flex-1 flex flex-col p-1 rounded-xl transition-all duration-200",
+        isOver ? "bg-jc-blue/5 ring-1 ring-jc-blue/20 ring-dashed" : "bg-transparent"
       )}
     >
       <div className={cn(
-        "flex justify-between items-center p-2 rounded-xl border-b-2 mb-2 shadow-sm",
+        "flex items-center justify-between p-1.5 rounded-lg border-b-2 mb-2 shadow-sm",
         style.bg, style.border
       )}>
-        <span className={cn("text-[8px] font-black uppercase tracking-tight truncate", style.text)}>
+        <span className={cn("text-[7.5px] font-black uppercase tracking-tighter truncate pr-1", style.text)}>
           {coluna.nome}
         </span>
-        <span className="bg-white/90 px-1.5 py-0.5 rounded-full text-[9px] font-black text-slate-500 border border-white/50">
+        <span className="bg-white/90 px-1 rounded-full text-[8px] font-black text-slate-500 shrink-0">
           {coluna.veiculos.length}
         </span>
       </div>
