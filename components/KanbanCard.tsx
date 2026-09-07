@@ -1,4 +1,5 @@
 "use client";
+
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { useRouter } from "next/navigation";
@@ -15,6 +16,14 @@ export function KanbanCard({ veiculo }: { veiculo: VeiculoCanvas }) {
     transform: CSS.Translate.toString(transform),
     opacity: isDragging ? 0.3 : 1,
     zIndex: isDragging ? 100 : 1,
+  };
+
+  // Trata a string 'YYYY-MM-DD' diretamente para evitar deslocamento de fuso no new Date()
+  const formatarDataEntrada = (dataStr: string) => {
+    if (!dataStr) return "";
+    const [, mes, dia] = dataStr.split("T")[0].split("-");
+    if (!dia || !mes) return dataStr;
+    return `${dia}/${mes}`;
   };
 
   return (
@@ -49,7 +58,7 @@ export function KanbanCard({ veiculo }: { veiculo: VeiculoCanvas }) {
 
         <div className="pt-2 border-t border-slate-50 flex justify-between items-center pointer-events-none">
           <span className="text-[9px] font-bold text-slate-300">
-            {new Date(veiculo.data_entrada).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+            {formatarDataEntrada(veiculo.data_entrada)}
           </span>
         </div>
       </div>

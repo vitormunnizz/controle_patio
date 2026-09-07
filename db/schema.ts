@@ -2,13 +2,13 @@ import { pgTable, serial, varchar, integer, text, timestamp, date } from "drizzl
 
 export const status = pgTable("status", {
   id: serial("id").primaryKey().notNull(),
-  nome: varchar("nome", { length: 50 }).notNull(),
+  nome: varchar("nome", { length: 50 }).notNull().unique(), // Adicionado .unique()
   ordem: integer("ordem").notNull(),
 });
 
 export const veiculos = pgTable("veiculos", {
   id: serial("id").primaryKey().notNull(),
-  placa: varchar("placa", { length: 10 }).notNull(),
+  placa: varchar("placa", { length: 10 }).notNull().unique(), // Adicionado .unique()
   modelo: varchar("modelo", { length: 100 }).notNull(),
   cliente: varchar("cliente", { length: 150 }).notNull(),
   data_entrada: date("data_entrada").notNull(),

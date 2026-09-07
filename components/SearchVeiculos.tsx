@@ -1,3 +1,4 @@
+// components/SearchVeiculos.tsx
 "use client";
 
 import { Search, RotateCcw } from "lucide-react";
@@ -5,51 +6,51 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export function SearchVeiculos() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const [query, setQuery] = useState(searchParams.get("search") || "");
+  const router = useRouter();
+  const [term, setTerm] = useState(searchParams.get("search") || "");
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const params = new URLSearchParams(searchParams.toString());
-    if (query.trim()) params.set("search", query.trim());
-    else params.delete("search");
-    router.push(`/?${params.toString()}`, { scroll: false });
+    if (term.trim()) {
+      router.push(`/?search=${encodeURIComponent(term)}`);
+    } else {
+      router.push("/");
+    }
   };
 
-  const handleClear = () => {
-    setQuery("");
-    router.push("/", { scroll: false });
+  const handleReset = () => {
+    setTerm("");
+    router.push("/");
   };
 
   return (
-    <form onSubmit={handleSearch} className="flex gap-2 w-full items-center">
+    <form onSubmit={handleSearch} className="flex items-center gap-1.5 w-full">
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
         <input
           type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
           placeholder="Placa, cliente..."
-          className="w-full h-9 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-bold outline-none focus:ring-1 focus:ring-jc-blue transition-all"
+          value={term}
+          onChange={(e) => setTerm(e.target.value)}
+          className="w-full h-9 pl-8 pr-3 bg-slate-100 text-slate-800 rounded-xl text-xs font-semibold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-jc-blue/30"
         />
       </div>
-      
-      <button 
+      <button
         type="submit"
-        className="h-9 px-4 bg-slate-900 hover:bg-black text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 shrink-0"
+        className="h-9 px-3 bg-jc-navy text-white rounded-xl text-[9px] font-black uppercase tracking-wider shrink-0"
       >
         Buscar
       </button>
-
-      <button 
-        type="button"
-        onClick={handleClear}
-        className="h-9 px-3 bg-white hover:bg-slate-50 text-slate-500 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shrink-0 flex items-center gap-1.5 shadow-sm"
-      >
-        <RotateCcw size={12} />
-        Limpar
-      </button>
+      {searchParams.get("search") && (
+        <button
+          type="button"
+          onClick={handleReset}
+          className="h-9 px-2.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-colors shrink-0"
+        >
+          <RotateCcw size={14} />
+        </button>
+      )}
     </form>
   );
 }

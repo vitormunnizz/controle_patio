@@ -2,8 +2,8 @@
 
 import { Camera, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { salvarFotoNoBanco } from "@/app/veiculos/[id]/actions";
+import { salvarFotoDrive } from "@/app/veiculos/[id]/actions";
+import imageCompression from "browser-image-compression";
 
 export function UploadFoto({ veiculoId }: { veiculoId: number }) {
   const [loading, setLoading] = useState(false);
@@ -13,53 +13,43 @@ export function UploadFoto({ veiculoId }: { veiculoId: number }) {
     if (!file) return;
 
     setLoading(true);
-
     try {
-      // 1. Gerar um nome único para o arquivo
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${veiculoId}/${Date.now()}.${fileExt}`;
+      const compressed = await imageCompression(file, {
+        maxSizeMB: 0.7,
+        maxWidthOrHeight: 1200,
+        fileType: "image/webp",
+      });
 
-      // 2. Upload para o Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('veiculos')
-        .upload(fileName, file);
+      const formData = new FormData();
+      formData.append("file", compressed);
 
-      if (error) throw error;
-
-      // 3. Pegar a URL Pública da foto
-      const { data: { publicUrl } } = supabase.storage
-        .from('veiculos')
-        .getPublicUrl(fileName);
-
-      // 4. Salvar essa URL no seu banco de dados PostgreSQL
-      await salvarFotoNoBanco(veiculoId, publicUrl);
-
-      alert("Foto adicionada com sucesso!");
-    } catch (error) {
-      console.error("Erro no upload:", error);
-      alert("Erro ao enviar foto. Verifique se o Bucket está como 'Public'.");
+      await salvarFotoDrive(veiculoId, formData);
+    } catch {
+      alert("Erro ao salvar no Google Drive.");
     } finally {
       setLoading(false);
+      // Limpa o input para permitir o upload da mesma imagem novamente, se necessário
+      e.target.value = "";
     }
   };
 
   return (
     <div className="relative">
-      <input 
-        type="file" 
-        accept="image/*" 
-        capture="environment" // Força abrir a câmera no celular
-        className="hidden" 
-        id="upload-pic"
+      <input
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        id="up-drive"
         onChange={handleUpload}
         disabled={loading}
       />
-      <label 
-        htmlFor="upload-pic" 
-        className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest cursor-pointer transition-all active:scale-95 shadow-md flex items-center gap-2"
+      <label
+        htmlFor="up-drive"
+        className="h-9 px-4 bg-jc-blue hover:bg-jc-navy text-white rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer transition-all flex items-center gap-2 shadow-sm"
       >
-        {loading ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
-        {loading ? "Enviando..." : "Adicionar Foto"}
+        {loading ? <Loader2 className="animate-spin" size={14} /> : <Camera size={14} />}
+        {loading ? "Salvando..." : "Adicionar Foto"}
       </label>
     </div>
   );
