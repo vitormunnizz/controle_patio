@@ -5,23 +5,39 @@ import { veiculos, fotos, status as statusTable } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { google } from "googleapis";
-import { Readable } from "stream";
+import { writeFile, mkdir, unlink } from "fs/promises";
+import { existsSync } from "fs";
+import path from "path";
 
-// 1. Configuração de Segurança e Autenticação do Google Drive
-const clientEmail = process.env.GOOGLE_DRIVE_CLIENT_EMAIL || "";
-const privateKey = process.env.GOOGLE_DRIVE_PRIVATE_KEY?.replace(/\\n/g, "\n") || "";
-const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID || "";
+// --- AUXILIAR: SALVAR ARQUIVO LOCALMENTE ---
+async function salvarArquivoLocal(buffer: Buffer, nomeArquivo: string): Promise<string> {
+  const pastaUploads = path.join(process.cwd(), "public", "uploads");
+  await mkdir(pastaUploads, { recursive: true });
 
-const auth = new google.auth.JWT({
-  email: clientEmail,
-  key: privateKey,
-  scopes: ["https://www.googleapis.com/auth/drive"],
-});
+  const caminhoCompleto = path.join(pastaUploads, nomeArquivo);
+  await writeFile(caminhoCompleto, buffer);
 
-const drive = google.drive({ version: "v3", auth });
+  return `/uploads/${nomeArquivo}`;
+}
 
-// --- AÇÃO: ATUALIZAR VEÍCULO (NO BANCO LOCAL) ---
+// --- AUXILIAR: EXCLUIR ARQUIVO LOCALMENTE ---
+async function deletarArquivoLocal(urlRelativa: string) {
+  if (!urlRelativa) return;
+  
+  // Extrai o nome do arquivo da URL (ex: /uploads/foto.jpg -> foto.jpg)
+  const nomeArquivo = path.basename(urlRelativa);
+  const caminhoArquivo = path.join(process.cwd(), "public", "uploads", nomeArquivo);
+
+  if (existsSync(caminhoArquivo)) {
+    try {
+      await unlink(caminhoArquivo);
+    } catch (error) {
+      console.warn(`Aviso: Não foi possível remover o arquivo local ${caminhoArquivo}:`, error);
+    }
+  }
+}
+
+// --- AÇÃO: ATUALIZAR VEÍCULO ---
 export async function atualizarVeiculo(id: number, formData: FormData) {
   await db.update(veiculos).set({
     placa: formData.get("placa") as string,
@@ -38,7 +54,7 @@ export async function atualizarVeiculo(id: number, formData: FormData) {
   redirect("/");
 }
 
-// --- AÇÃO: SALVAR FOTO NO DRIVE + GRAVAR REFERÊNCIA NO BANCO LOCAL ---
+// --- AÇÃO: SALVAR FOTO LOCALMENTE + GRAVAR NO BANCO ---
 export async function salvarFotoDrive(veiculoId: number, formData: FormData) {
   const file = formData.get("file") as File;
   if (!file) throw new Error("Arquivo não encontrado no envio");
@@ -46,34 +62,13 @@ export async function salvarFotoDrive(veiculoId: number, formData: FormData) {
   const buffer = Buffer.from(await file.arrayBuffer());
 
   try {
-    // 1. Upload do arquivo físico para o Google Drive
-    const response = await drive.files.create({
-      requestBody: {
-        name: `VEICULO_${veiculoId}_${Date.now()}.webp`,
-        parents: [folderId],
-      },
-      media: {
-        mimeType: file.type || "image/webp",
-        body: Readable.from(buffer),
-      },
-      fields: "id",
-    });
+    const extensao = path.extname(file.name) || ".webp";
+    const nomeArquivo = `VEICULO_${veiculoId}_${Date.now()}${extensao}`;
 
-    const fileId = response.data.id;
-    if (!fileId) throw new Error("Erro ao gerar ID no Drive");
+    // 1. Salva a foto na pasta public/uploads
+    const publicUrl = await salvarArquivoLocal(buffer, nomeArquivo);
 
-    // 2. Torna o arquivo publicamente visível para exibição em <img>
-    await drive.permissions.create({
-      fileId,
-      requestBody: {
-        role: "reader",
-        type: "anyone",
-      },
-    });
-
-    // 3. Salva a URL formatada no banco de dados local
-    const publicUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
-
+    // 2. Salva a URL local (/uploads/VEICULO_...) no banco de dados
     await db.insert(fotos).values({
       veiculo_id: veiculoId,
       url: publicUrl,
@@ -82,31 +77,24 @@ export async function salvarFotoDrive(veiculoId: number, formData: FormData) {
     revalidatePath(`/veiculos/${veiculoId}`);
     revalidatePath("/");
   } catch (error) {
-    console.error("Erro no upload Drive:", error);
-    throw new Error("Falha ao salvar no Google Drive.");
+    console.error("Erro no upload local:", error);
+    throw new Error("Falha ao salvar a imagem localmente.");
   }
 }
 
-// --- AÇÃO: DELETAR FOTO DO DRIVE E DO BANCO LOCAL ---
+// --- AÇÃO: DELETAR FOTO LOCAL E DO BANCO ---
 export async function deletarFotoDrive(fotoId: number, veiculoId: number, url: string) {
-  const fileIdMatch = url.match(/id=([^&]+)/);
-  const fileId = fileIdMatch ? fileIdMatch[1] : null;
+  // 1. Apaga o arquivo físico da pasta public/uploads
+  await deletarArquivoLocal(url);
 
-  if (fileId) {
-    try {
-      await drive.files.delete({ fileId });
-    } catch {
-      console.warn("Arquivo já removido do Drive ou inexistente.");
-    }
-  }
-
-  // Remove do Banco Local
+  // 2. Remove o registro do Banco Local
   await db.delete(fotos).where(eq(fotos.id, fotoId));
+
   revalidatePath(`/veiculos/${veiculoId}`);
   revalidatePath("/");
 }
 
-// --- AÇÃO: EXCLUIR VEÍCULO COMPLETO ---
+// --- AÇÃO: EXCLUIR VEÍCULO COMPLETO E SUAS FOTOS ---
 export async function excluirVeiculo(id: number) {
   try {
     // 1. Consulta fotos vinculadas no banco local
@@ -114,19 +102,10 @@ export async function excluirVeiculo(id: number) {
       where: eq(fotos.veiculo_id, id),
     });
 
-    // 2. Remove fotos do Google Drive
+    // 2. Apaga os arquivos físicos locais de cada foto
     for (const foto of fotosVeiculo) {
-      if (!foto.url) continue;
-
-      const fileIdMatch = foto.url.match(/id=([^&]+)/);
-      const fileId = fileIdMatch ? fileIdMatch[1] : null;
-
-      if (fileId) {
-        try {
-          await drive.files.delete({ fileId });
-        } catch (driveError) {
-          console.warn(`Aviso: Erro ao apagar foto ID ${fileId} do Drive:`, driveError);
-        }
+      if (foto.url) {
+        await deletarArquivoLocal(foto.url);
       }
     }
 
@@ -143,7 +122,7 @@ export async function excluirVeiculo(id: number) {
   redirect("/");
 }
 
-// --- AÇÃO: BACKUP DO BANCO LOCAL PARA O DRIVE ---
+// --- AÇÃO: BACKUP DO BANCO PARA ARQUIVO CSV LOCAL ---
 export async function backupDadosParaDrive() {
   try {
     const dados = await db
@@ -161,21 +140,13 @@ export async function backupDadosParaDrive() {
       .join("\n");
 
     const buffer = Buffer.from(cabecalho + linhas, "utf-8");
+    const nomeArquivo = `BACKUP_JC_${new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")}.csv`;
 
-    await drive.files.create({
-      requestBody: {
-        name: `BACKUP_JC_${new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")}.csv`,
-        parents: [folderId],
-      },
-      media: {
-        mimeType: "text/csv",
-        body: Readable.from(buffer),
-      },
-    });
+    const urlRelativa = await salvarArquivoLocal(buffer, nomeArquivo);
 
-    return { success: true };
+    return { success: true, path: urlRelativa };
   } catch (error) {
-    console.error("Erro no backup:", error);
-    throw new Error("Falha ao gerar planilha no Drive.");
+    console.error("Erro no backup local:", error);
+    throw new Error("Falha ao gerar planilha de backup.");
   }
 }

@@ -5,17 +5,22 @@ import { veiculos as veiculosTable, status as statusTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { google } from "googleapis";
-import { Readable } from "stream";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 
-// Configuração central do Google Drive (instância privada, sem 'export')
-const authDrive = new google.auth.JWT({
-  email: process.env.GOOGLE_DRIVE_CLIENT_EMAIL,
-  key: process.env.GOOGLE_DRIVE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-  scopes: ["https://www.googleapis.com/auth/drive"],
-});
+// Função auxiliar para salvar o arquivo localmente em public/uploads
+async function salvarArquivoLocal(buffer: Buffer, nomeArquivo: string): Promise<string> {
+  const pastaUploads = path.join(process.cwd(), "public", "uploads");
+  
+  // Garante que a pasta public/uploads existe
+  await mkdir(pastaUploads, { recursive: true });
 
-const drive = google.drive({ version: "v3", auth: authDrive });
+  const caminhoCompleto = path.join(pastaUploads, nomeArquivo);
+  await writeFile(caminhoCompleto, buffer);
+
+  // Retorna a URL relativa do arquivo local
+  return `/uploads/${nomeArquivo}`;
+}
 
 export async function criarVeiculo(formData: FormData) {
   await db.insert(veiculosTable).values({
@@ -40,6 +45,7 @@ export async function atualizarStatusVeiculo(veiculoId: number, novoStatusId: nu
   revalidatePath("/");
 }
 
+// Backup salvo localmente na pasta public/uploads
 export async function backupDadosParaDrive() {
   try {
     const dados = await db
@@ -53,21 +59,14 @@ export async function backupDadosParaDrive() {
       .join("\n");
 
     const buffer = Buffer.from(cabecalho + linhas, "utf-8");
+    const nomeArquivo = `BACKUP_JC_${new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")}.csv`;
 
-    await drive.files.create({
-      requestBody: {
-        name: `BACKUP_JC_${new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")}.csv`,
-        parents: [process.env.GOOGLE_DRIVE_FOLDER_ID!],
-      },
-      media: {
-        mimeType: "text/csv",
-        body: Readable.from(buffer),
-      },
-    });
+    // Salva o arquivo .csv localmente
+    const urlRelativa = await salvarArquivoLocal(buffer, nomeArquivo);
 
-    return { success: true };
+    return { success: true, path: urlRelativa };
   } catch (error) {
-    console.error("Erro ao realizar backup para o Google Drive:", error);
-    throw new Error("Falha ao salvar o arquivo de backup no Google Drive.");
+    console.error("Erro ao realizar backup local:", error);
+    throw new Error("Falha ao salvar o arquivo de backup localmente.");
   }
 }
