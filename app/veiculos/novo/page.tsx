@@ -14,11 +14,11 @@ export default async function NovoVeiculoPage({
   const listaStatus = await db.select().from(status).orderBy(asc(status.ordem));
 
   return (
-    <main className="min-h-screen bg-slate-100 p-3 sm:p-4 md:p-6 font-sans antialiased text-slate-900 overflow-x-hidden">
+    <main className="app-background min-h-screen p-4 sm:p-6 font-sans antialiased text-slate-900 overflow-x-hidden">
       <div className="max-w-6xl mx-auto space-y-4 w-full min-w-0">
         
         {/* HEADER SLIM RESPONSIVO */}
-        <header className="bg-jc-navy p-3 rounded-2xl flex items-center justify-between text-white shadow-lg border border-white/5 gap-2 w-full min-w-0">
+        <header className="bg-gradient-to-r from-jc-navy via-[#073b83] to-jc-blue p-3 rounded-2xl flex items-center justify-between text-white shadow-md border border-white/10 border-b-2 border-b-jc-yellow/80 gap-2 w-full min-w-0">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <Link 
               href="/" 
@@ -34,10 +34,10 @@ export default async function NovoVeiculoPage({
         </header>
 
         {/* CONTAINER DO FORMULÁRIO */}
-        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 overflow-hidden w-full min-w-0">
+        <div className="bg-white/95 rounded-2xl sm:rounded-3xl shadow-[0_10px_30px_rgba(15,23,42,0.06)] border border-white overflow-hidden w-full min-w-0">
           <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
             <Car size={16} className="text-jc-blue shrink-0" />
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest truncate">
+            <h2 className="text-xs font-extrabold text-slate-600 uppercase tracking-wider truncate">
               Informações Gerais do Veículo
             </h2>
           </div>
@@ -55,11 +55,11 @@ export default async function NovoVeiculoPage({
             )}
             
             {/* GRID DE CAMPOS (2 COLUNAS) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full min-w-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full min-w-0">
               
               {/* PLACA */}
               <div className="space-y-1 min-w-0">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-1 truncate">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 truncate">
                   Placa
                 </label>
                 <input
@@ -67,19 +67,19 @@ export default async function NovoVeiculoPage({
                   required
                   maxLength={7}
                   placeholder="ABC1D23"
-                  className="w-full border border-slate-100 bg-slate-50 p-2.5 rounded-xl uppercase font-black text-jc-blue outline-none focus:border-jc-blue text-sm"
+                  className="w-full border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl uppercase font-black text-jc-blue outline-none focus:border-jc-blue text-sm"
                 />
               </div>
 
               {/* STATUS INICIAL */}
               <div className="space-y-1 min-w-0">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-1 truncate">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 truncate">
                   Status Inicial
                 </label>
                 <div className="relative">
                   <select
                     name="status_id"
-                    className="w-full border border-slate-100 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue cursor-pointer text-xs sm:text-sm truncate appearance-none pr-8"
+                    className="w-full border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue cursor-pointer text-sm truncate appearance-none pr-8"
                   >
                     {listaStatus.map((s) => (
                       <option key={s.id} value={s.id}>{s.nome}</option>
@@ -91,33 +91,33 @@ export default async function NovoVeiculoPage({
 
               {/* MODELO */}
               <div className="space-y-1 min-w-0">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-1 flex items-center gap-1 truncate">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 flex items-center gap-1 truncate">
                   <Car size={10} className="shrink-0" /> Modelo / Marca
                 </label>
                 <input
                   name="modelo"
                   required
                   placeholder="Ex: Honda Civic"
-                  className="w-full border border-slate-100 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue text-xs sm:text-sm"
+                  className="w-full border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue text-sm"
                 />
               </div>
 
               {/* CLIENTE */}
               <div className="space-y-1 min-w-0">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-1 flex items-center gap-1 truncate">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 flex items-center gap-1 truncate">
                   <User size={10} className="shrink-0" /> Cliente
                 </label>
                 <input
                   name="cliente"
                   required
                   placeholder="Nome do cliente"
-                  className="w-full border border-slate-100 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue text-xs sm:text-sm"
+                  className="w-full border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue text-sm"
                 />
               </div>
 
               {/* DATA DE ENTRADA */}
               <div className="space-y-1 min-w-0">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-1 flex items-center gap-1 truncate">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 flex items-center gap-1 truncate">
                   <Calendar size={10} className="shrink-0" /> Entrada
                 </label>
                 <input
@@ -125,19 +125,19 @@ export default async function NovoVeiculoPage({
                   type="date"
                   required
                   defaultValue={new Date().toISOString().split("T")[0]}
-                  className="w-full min-w-0 border border-slate-100 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-700 text-xs outline-none focus:border-jc-blue appearance-none"
+                  className="w-full min-w-0 border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl font-semibold text-slate-700 text-sm outline-none focus:border-jc-blue appearance-none"
                 />
               </div>
 
               {/* PREVISÃO DE ENTREGA */}
               <div className="space-y-1 min-w-0">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-1 flex items-center gap-1 truncate">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 flex items-center gap-1 truncate">
                   <Calendar size={10} className="shrink-0" /> Previsão
                 </label>
                 <input
                   name="data_prevista_entrega"
                   type="date"
-                  className="w-full min-w-0 border border-slate-100 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-700 text-xs outline-none focus:border-jc-blue appearance-none"
+                  className="w-full min-w-0 border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl font-semibold text-slate-700 text-sm outline-none focus:border-jc-blue appearance-none"
                 />
               </div>
             </div>
@@ -153,7 +153,7 @@ export default async function NovoVeiculoPage({
 
             {/* OBSERVAÇÕES TÉCNICAS */}
             <div className="space-y-1 w-full min-w-0">
-              <label htmlFor="observacoes" className="mb-1.5 ml-1 block truncate text-[9px] font-black uppercase tracking-widest text-slate-400">
+              <label htmlFor="observacoes" className="mb-1.5 ml-1 block truncate text-[11px] font-bold uppercase tracking-wide text-slate-500">
                 Observações Técnicas / Serviço
               </label>
               <textarea
@@ -161,7 +161,7 @@ export default async function NovoVeiculoPage({
                 name="observacoes"
                 rows={2}
                 placeholder="Descrição resumida do serviço a ser realizado..."
-                className="w-full border border-slate-100 bg-slate-50 p-3 rounded-xl resize-none font-medium text-slate-600 text-xs outline-none focus:border-jc-blue"
+                className="w-full border border-slate-200 bg-white shadow-sm p-3 rounded-xl resize-none font-medium text-slate-600 text-sm outline-none focus:border-jc-blue"
               />
             </div>
 

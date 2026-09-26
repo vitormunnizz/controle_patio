@@ -14,25 +14,24 @@ export function KanbanColumn({ coluna, children }: { coluna: ColunaCanvas, child
   return (
     <div 
       ref={setNodeRef} 
-      // Largura reduzida para caber tudo em uma tela
       className={cn(
-        "min-w-[160px] flex-1 flex flex-col p-1 rounded-xl transition-all duration-200",
-        isOver ? "bg-jc-blue/5 ring-1 ring-jc-blue/20 ring-dashed" : "bg-transparent"
+        "min-w-0 flex flex-col rounded-xl border border-white/90 bg-white/50 p-1 shadow-[0_3px_12px_rgba(15,23,42,0.035)] transition-all duration-200",
+        isOver ? "bg-blue-50 ring-2 ring-jc-blue/25 ring-dashed" : ""
       )}
     >
       <div className={cn(
-        "flex items-center justify-between p-1.5 rounded-lg border-b-2 mb-2 shadow-sm",
+        "flex items-center justify-between gap-1.5 rounded-lg border px-1.5 py-1.5 mb-1.5 shadow-sm",
         style.bg, style.border
       )}>
-        <span className={cn("text-[7.5px] font-black uppercase tracking-tighter truncate pr-1", style.text)}>
+        <span className={cn("min-w-0 flex-1 whitespace-normal text-[8px] font-extrabold uppercase leading-tight tracking-tight pr-1", style.text)}>
           {coluna.nome}
         </span>
-        <span className="bg-white/90 px-1 rounded-full text-[8px] font-black text-slate-500 shrink-0">
+        <span className="bg-white/90 px-1.5 rounded-full text-[8px] font-bold text-slate-600 shrink-0">
           {coluna.veiculos.length}
         </span>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5 min-h-10">
         {children}
       </div>
     </div>

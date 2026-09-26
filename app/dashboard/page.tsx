@@ -44,11 +44,11 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
   const totalVeiculos = Number(totalResult?.value || 0);
 
   return (
-    <main className="min-h-screen lg:h-screen bg-[#F8FAFC] p-2.5 sm:p-3 font-sans overflow-x-hidden lg:overflow-hidden">
+    <main className="app-background min-h-screen lg:h-screen p-2.5 sm:p-3 font-sans overflow-x-hidden lg:overflow-hidden">
       <div className="max-w-6xl mx-auto h-full flex flex-col gap-2.5">
         
         {/* HEADER RESPONSIVO */}
-        <header className="bg-jc-navy p-2.5 rounded-xl flex flex-col sm:flex-row items-center justify-between text-white shadow-md shrink-0 border border-white/5 gap-2 sm:gap-2">
+        <header className="bg-gradient-to-r from-jc-navy via-[#073b83] to-jc-blue p-2.5 sm:px-4 rounded-xl flex flex-col sm:flex-row items-center justify-between text-white shadow-md shrink-0 border border-white/10 gap-2">
           <div className="flex items-center gap-3 px-1 w-full sm:w-auto justify-between sm:justify-start">
             <div className="flex items-center gap-2.5">
               <Link href="/" className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all shrink-0 flex items-center justify-center">
@@ -57,7 +57,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
               
               <div className="h-5 w-[1px] bg-white/20" />
 
-              <h1 className="text-base sm:text-lg font-black uppercase italic tracking-tighter text-white">
+              <h1 className="text-base sm:text-lg font-extrabold uppercase tracking-tight text-white">
                 Dashboard
               </h1>
             </div>
@@ -72,17 +72,17 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
 
         {/* MÉTRICAS MINI */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 shrink-0">
-          <StatCard title="Entradas" value={totalVeiculos} icon={<Car size={13} />} color="text-jc-blue" bgColor="bg-blue-50" />
-          <StatCard title="Finalizados" value={Number(entreguesResult?.value || 0)} icon={<CheckCircle2 size={13} />} color="text-green-600" bgColor="bg-green-50" />
-          <StatCard title="Taxa" value={totalVeiculos > 0 ? Math.round((Number(entreguesResult?.value) / totalVeiculos) * 100) : 0} unit="%" icon={<TrendingUp size={13} />} color="text-purple-600" bgColor="bg-purple-50" />
-          <StatCard title="Período" value={from ? (Math.ceil((new Date(dataFimStr).getTime() - new Date(dataInicioStr).getTime()) / (1000 * 3600 * 24))) : 30} unit="d" icon={<Clock size={13} />} color="text-slate-500" bgColor="bg-slate-200" />
+          <StatCard title="Entradas" value={totalVeiculos} icon={<Car size={18} />} color="text-jc-blue" bgColor="bg-blue-50" />
+          <StatCard title="Finalizados" value={Number(entreguesResult?.value || 0)} icon={<CheckCircle2 size={18} />} color="text-green-600" bgColor="bg-green-50" />
+          <StatCard title="Taxa" value={totalVeiculos > 0 ? Math.round((Number(entreguesResult?.value) / totalVeiculos) * 100) : 0} unit="%" icon={<TrendingUp size={18} />} color="text-purple-600" bgColor="bg-purple-50" />
+          <StatCard title="Período" value={from ? (Math.ceil((new Date(dataFimStr).getTime() - new Date(dataInicioStr).getTime()) / (1000 * 3600 * 24))) : 30} unit="d" icon={<Clock size={18} />} color="text-slate-500" bgColor="bg-slate-200" />
         </div>
 
         {/* 1. GRÁFICO VISUAL (TOPO - OCUPA O ESPAÇO DISPONÍVEL) */}
-        <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col flex-1 min-h-0">
+        <div className="bg-gradient-to-br from-white to-[#fafdff] p-3 rounded-xl border border-white shadow-[0_5px_18px_rgba(15,23,42,0.05)] flex flex-col flex-1 min-h-0">
           <div className="flex items-center gap-2 mb-1 shrink-0">
               <BarChart3 className="text-jc-blue" size={14} />
-              <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Distribuição por Status</h3>
+              <h3 className="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider">Distribuição por Status</h3>
           </div>
           <div className="flex-1 w-full min-h-0">
             <StatusChart data={statusData} />
@@ -90,21 +90,21 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
         </div>
 
         {/* 2. TABELA DETALHADA DO FLUXO (EMBAIXO - TAMANHO COMPACTO FIXO) */}
-        <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col shrink-0">
+        <div className="bg-white/95 p-3 rounded-xl border border-white shadow-[0_5px_18px_rgba(15,23,42,0.05)] flex flex-col shrink-0">
           <div className="flex items-center justify-between mb-1.5">
             <div className="flex items-center gap-2">
                 <Table className="text-jc-blue" size={14} />
-                <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Resumo do Fluxo</h3>
+                <h3 className="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider">Resumo do Fluxo</h3>
             </div>
           </div>
 
           <div className="w-full">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-100 text-[8px] font-black uppercase tracking-wider text-slate-400">
-                  <th className="pb-1">Status</th>
-                  <th className="pb-1 text-center">Quantidade</th>
-                  <th className="pb-1 text-right">Proporção</th>
+                <tr className="border-b border-slate-100 text-[8px] font-bold uppercase tracking-wider text-slate-500">
+                  <th className="py-1">Status</th>
+                  <th className="py-1 text-center">Quantidade</th>
+                  <th className="py-1 text-right">Proporção</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -122,7 +122,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
                         </div>
                       </td>
                       <td className="py-1 text-center font-black text-jc-navy text-xs">{s.total}</td>
-                      <td className="py-1 text-right font-bold text-slate-400 text-[11px]">{percentual}%</td>
+                      <td className="py-1 text-right font-semibold text-slate-500 text-[10px]">{percentual}%</td>
                     </tr>
                   );
                 })}
@@ -138,14 +138,14 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
 
 function StatCard({ title, value, unit = "", icon, color, bgColor }: { title: string, value: number, unit?: string, icon: React.ReactNode, color: string, bgColor: string }) {
   return (
-    <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center gap-2 shadow-sm">
-      <div className={cn("w-6 h-6 sm:w-7 sm:h-7 rounded-md flex items-center justify-center shrink-0 shadow-inner", bgColor, color)}>
+    <div className="bg-white/95 p-2 rounded-lg border border-white flex items-center gap-2 shadow-[0_3px_12px_rgba(15,23,42,0.06)]">
+      <div className={cn("w-7 h-7 rounded-md flex items-center justify-center shrink-0", bgColor, color)}>
         {icon}
       </div>
       <div className="min-w-0">
-        <p className="text-[7px] font-black text-slate-400 uppercase tracking-wider leading-none mb-0.5 truncate">{title}</p>
-        <p className="text-xs sm:text-xs font-black text-jc-navy leading-none">
-          {value}<span className="text-[8px] opacity-40 ml-0.5">{unit}</span>
+        <p className="text-[8px] font-bold text-slate-500 uppercase tracking-wider leading-none mb-0.5 truncate">{title}</p>
+        <p className="text-sm font-extrabold text-jc-navy leading-none">
+          {value}<span className="text-[9px] opacity-50 ml-0.5">{unit}</span>
         </p>
       </div>
     </div>

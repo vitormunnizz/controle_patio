@@ -31,7 +31,7 @@ export function KanbanCard({ veiculo }: { veiculo: VeiculoCanvas }) {
       <div 
         {...listeners} 
         {...attributes}
-        className="bg-white p-3 rounded-xl shadow-sm border border-slate-100 group hover:border-jc-blue/30 transition-all cursor-grab active:cursor-grabbing"
+        className="bg-white p-2 rounded-lg shadow-[0_2px_8px_rgba(15,23,42,0.07)] border border-white border-l-2 border-l-blue-200 group hover:border-l-jc-blue hover:shadow-md transition-all cursor-grab active:cursor-grabbing"
       >
         <div className="flex justify-between items-center mb-2">
           <span className="font-black text-sm text-slate-800 uppercase tracking-tighter leading-none">
@@ -41,23 +41,23 @@ export function KanbanCard({ veiculo }: { veiculo: VeiculoCanvas }) {
           <button 
             onPointerDown={(e) => e.stopPropagation()} 
             onClick={() => router.push(`/veiculos/${veiculo.id}`)}
-            className="px-2 py-0.5 bg-jc-navy text-jc-yellow rounded text-[8px] font-black uppercase tracking-widest cursor-pointer shadow-sm"
+            className="px-2 py-0.5 bg-blue-50 text-jc-blue rounded text-[8px] font-bold uppercase tracking-wide cursor-pointer hover:bg-jc-blue hover:text-white transition-colors"
           >
             Editar
           </button>
         </div>
 
-        <div className="space-y-0.5 pointer-events-none mb-3">
-          <p className="text-[11px] font-bold text-slate-600 uppercase truncate">
+        <div className="space-y-0.5 pointer-events-none mb-1.5">
+          <p className="text-[10px] font-bold text-slate-700 uppercase truncate">
             {veiculo.modelo}
           </p>
-          <p className="text-[10px] text-slate-400 font-medium italic truncate">
+          <p className="text-[9px] text-slate-500 font-medium truncate">
             {veiculo.cliente}
           </p>
         </div>
 
-        <div className="pt-2 border-t border-slate-50 flex justify-between items-center pointer-events-none">
-          <span className="text-[9px] font-bold text-slate-300">
+        <div className="pt-1 border-t border-slate-50 flex justify-between items-center pointer-events-none">
+          <span className="text-[8px] font-semibold text-slate-400">
             {formatarDataEntrada(veiculo.data_entrada)}
           </span>
         </div>

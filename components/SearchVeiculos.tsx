@@ -33,12 +33,12 @@ export function SearchVeiculos() {
           placeholder="Placa, cliente..."
           value={term}
           onChange={(e) => setTerm(e.target.value)}
-          className="w-full h-9 pl-8 pr-3 bg-slate-100 text-slate-800 rounded-xl text-xs font-semibold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-jc-blue/30"
+          className="w-full h-11 pl-10 pr-3 bg-slate-50 text-slate-800 rounded-xl text-sm font-medium placeholder:text-slate-400 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-jc-blue/25 focus:border-jc-blue"
         />
       </div>
       <button
         type="submit"
-        className="h-9 px-3 bg-jc-navy cursor-pointer text-white rounded-xl text-[9px] font-black uppercase tracking-wider shrink-0"
+        className="h-11 px-4 bg-jc-navy cursor-pointer text-white rounded-xl text-[11px] font-bold uppercase tracking-wide shrink-0 hover:bg-jc-blue transition-colors"
       >
         Buscar
       </button>
@@ -46,7 +46,7 @@ export function SearchVeiculos() {
         <button
           type="button"
           onClick={handleReset}
-          className="h-9 px-2.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-colors shrink-0"
+          className="h-11 px-3 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-colors shrink-0"
         >
           <RotateCcw size={14} />
         </button>

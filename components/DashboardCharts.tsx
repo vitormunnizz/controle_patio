@@ -43,7 +43,7 @@ export function StatusChart({ data }: { data: StatusData[] }) {
                   dy={12}
                   textAnchor="end"
                   fill="#94a3b8"
-                  fontSize={8}
+                  fontSize={9}
                   fontWeight={900}
                   transform="rotate(-40)"
                 >
@@ -53,9 +53,9 @@ export function StatusChart({ data }: { data: StatusData[] }) {
             )}
             interval={0}
           />
-          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 8, fill: '#94a3b8' }} />
-          <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '8px', border: 'none', fontSize: '9px' }} />
-          <Bar dataKey="total" radius={[3, 3, 0, 0]} barSize={16}>
+          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#64748b' }} />
+          <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '10px' }} />
+          <Bar dataKey="total" radius={[4, 4, 0, 0]} barSize={20}>
             {data.map((_, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
           </Bar>
         </BarChart>

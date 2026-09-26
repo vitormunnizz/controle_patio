@@ -84,17 +84,17 @@ export default async function DashboardPage({
   const { colunas, ultimosVeiculos } = await getDados(search);
 
   return (
-    <main className="min-h-screen w-full bg-slate-50 p-2 sm:p-6 font-sans antialiased text-slate-900 overflow-x-hidden">
-      <div className="max-w-[1600px] mx-auto space-y-4 sm:space-y-6 w-full">
+    <main className="app-background min-h-screen w-full p-2 sm:p-4 font-sans antialiased text-slate-900 overflow-x-hidden">
+      <div className="max-w-[1600px] mx-auto space-y-3 w-full">
         
         {/* HEADER CORRIGIDO */}
-        <header className="flex items-center justify-between gap-2 bg-white px-3 py-2.5 sm:px-6 sm:py-3.5 rounded-2xl shadow-xs border border-slate-200/80 w-full">
+        <header className="flex items-center justify-between gap-2 bg-gradient-to-r from-jc-navy via-[#073b83] to-jc-blue px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl shadow-md border border-white/10 border-b-2 border-b-jc-yellow/80 text-white w-full">
           <Link 
             href="/dashboard" 
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 rounded-xl hover:bg-jc-navy hover:text-white transition-all group border border-slate-200/60 shadow-xs shrink-0"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all group border border-white/10 shrink-0"
           >
-            <LayoutDashboard size={14} className="text-jc-blue group-hover:text-jc-yellow transition-colors" />
-            <span className="text-[9px] font-black uppercase tracking-wider hidden xs:inline">Painel</span>
+            <LayoutDashboard size={14} className="text-jc-yellow transition-colors" />
+            <span className="text-[11px] font-bold uppercase tracking-wide hidden xs:inline">Painel</span>
           </Link>
 
           <Link href="/" className="shrink-0">
@@ -110,7 +110,7 @@ export default async function DashboardPage({
 
           <Link 
             href="/veiculos/novo" 
-            className="bg-jc-yellow hover:bg-yellow-400 text-jc-navy px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl font-black uppercase text-[9px] tracking-wider flex items-center gap-1 transition-all shadow-sm active:scale-95 border-b-2 border-yellow-600 shrink-0"
+            className="bg-jc-yellow hover:bg-yellow-400 text-jc-navy px-3 py-1.5 sm:px-4 rounded-lg font-extrabold uppercase text-[10px] tracking-wide flex items-center gap-1 transition-all shadow-sm active:scale-95 border-b-2 border-yellow-600 shrink-0"
           >
             <Plus size={14} strokeWidth={4} />
             <span>Novo</span>
@@ -118,10 +118,10 @@ export default async function DashboardPage({
         </header>
 
         {/* KANBAN */}
-        <section className="space-y-2 w-full overflow-hidden">
-          <div className="flex items-center gap-2 ml-1">
-            <div className="h-3 w-1 bg-jc-yellow rounded-full" />
-            <h2 className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+        <section className="space-y-1.5 w-full">
+          <div className="flex items-center gap-2.5 ml-1">
+            <div className="h-3.5 w-1 bg-jc-yellow rounded-full" />
+            <h2 className="text-[10px] font-extrabold text-slate-600 uppercase tracking-[0.16em]">
               Fluxo de Oficina
             </h2>
           </div>
@@ -129,13 +129,13 @@ export default async function DashboardPage({
         </section>
 
         {/* ÚLTIMOS VEÍCULOS / BUSCA */}
-        <section className="bg-white p-3.5 sm:p-6 rounded-2xl sm:rounded-[32px] shadow-xs border border-slate-200/80 w-full">
-          <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3 mb-4 sm:mb-6">
+        <section className="bg-white/95 p-3 sm:p-4 rounded-2xl shadow-[0_8px_28px_rgba(15,23,42,0.055)] border border-white/80 w-full">
+          <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-2 mb-3">
             <div className="flex flex-col gap-1">
-              <h2 className="text-sm sm:text-base font-black text-slate-800 tracking-tighter uppercase italic leading-none">
+              <h2 className="text-sm font-extrabold text-slate-800 tracking-tight uppercase leading-none">
                 {search ? "Resultado da Busca" : "Últimos Veículos"}
               </h2>
-              <div className="h-1 w-12 bg-jc-blue/20 rounded-full" />
+              <div className="h-0.5 w-10 bg-jc-blue/25 rounded-full" />
             </div>
             
             <div className="w-full md:w-[400px]">
@@ -146,7 +146,7 @@ export default async function DashboardPage({
           </div>
 
           {/* VISÃO CARD (CELULAR) */}
-          <div className="grid grid-cols-1 gap-2.5 md:hidden w-full">
+          <div className="grid grid-cols-1 gap-2 md:hidden w-full">
             {ultimosVeiculos.length === 0 ? (
               <div className="p-6 text-center text-xs font-bold text-slate-400">
                 Nenhum veículo encontrado.
@@ -159,7 +159,7 @@ export default async function DashboardPage({
                       {v.placa}
                     </Link>
                     <div className={cn(
-                      "px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider flex items-center gap-1 border shrink-0",
+                      "px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide flex items-center gap-1.5 border shrink-0",
                       statusStyles[v.status.nome]?.bg || "bg-slate-100",
                       statusStyles[v.status.nome]?.text || "text-slate-500"
                     )}>
@@ -170,11 +170,11 @@ export default async function DashboardPage({
 
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="min-w-0">
-                      <p className="text-[8px] font-bold text-slate-400 uppercase">Modelo</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Modelo</p>
                       <p className="font-bold text-slate-700 uppercase truncate">{v.modelo}</p>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[8px] font-bold text-slate-400 uppercase">Cliente</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Cliente</p>
                       <p className="font-medium text-slate-600 truncate">{v.cliente}</p>
                     </div>
                   </div>
@@ -182,7 +182,7 @@ export default async function DashboardPage({
                   <div className="pt-1.5 border-t border-slate-200/50 flex justify-end">
                     <Link
                       href={`/veiculos/${v.id}`}
-                      className="px-2.5 py-1 bg-white text-slate-600 hover:text-jc-blue rounded-lg text-[8px] font-black uppercase tracking-wider border border-slate-200/80 shadow-2xs"
+                      className="px-3 py-1.5 bg-white text-slate-600 hover:text-jc-blue rounded-lg text-[10px] font-bold uppercase tracking-wide border border-slate-200/80 shadow-2xs"
                     >
                       Editar
                     </Link>
@@ -193,14 +193,14 @@ export default async function DashboardPage({
           </div>
 
           {/* VISÃO TABELA (DESKTOP) */}
-          <div className="hidden md:block overflow-x-auto rounded-xl border border-slate-100">
+          <div className="hidden md:block overflow-x-auto rounded-lg border border-slate-100">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-100">
-                  <th className="p-3 text-[8px] font-black text-slate-400 uppercase tracking-widest">Placa</th>
-                  <th className="p-3 text-[8px] font-black text-slate-400 uppercase tracking-widest">Modelo / Marca</th>
-                  <th className="p-3 text-[8px] font-black text-slate-400 uppercase tracking-widest">Cliente</th>
-                  <th className="p-3 text-[8px] font-black text-slate-400 uppercase tracking-widest text-center">Status Atual</th>
+                  <th className="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Placa</th>
+                  <th className="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Modelo / Marca</th>
+                  <th className="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Cliente</th>
+                  <th className="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider text-center">Status Atual</th>
                   <th className="p-3"></th>
                 </tr>
               </thead>
@@ -214,16 +214,16 @@ export default async function DashboardPage({
                 ) : (
                   ultimosVeiculos.map((v) => (
                     <tr key={v.id} className="hover:bg-slate-50/50 transition-all group">
-                      <td className="p-3">
+                      <td className="px-3 py-2">
                         <Link href={`/veiculos/${v.id}`} className="font-black text-sm text-jc-blue uppercase tracking-tighter hover:text-jc-navy transition-colors block">
                           {v.placa}
                         </Link>
                       </td>
-                      <td className="p-3 text-xs font-bold text-slate-600 uppercase">{v.modelo}</td>
-                      <td className="p-3 text-xs text-slate-500 font-medium">{v.cliente}</td>
-                      <td className="p-3 text-center">
+                      <td className="px-3 py-2 text-xs font-bold text-slate-600 uppercase">{v.modelo}</td>
+                      <td className="px-3 py-2 text-xs text-slate-500 font-medium">{v.cliente}</td>
+                      <td className="px-3 py-2 text-center">
                         <div className={cn(
-                          "mx-auto w-fit px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 border shadow-2xs",
+                          "mx-auto w-fit px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide flex items-center gap-1.5 border shadow-2xs",
                           statusStyles[v.status.nome]?.bg || "bg-slate-100",
                           statusStyles[v.status.nome]?.text || "text-slate-500"
                         )}>
@@ -231,10 +231,10 @@ export default async function DashboardPage({
                           {v.status.nome}
                         </div>
                       </td>
-                      <td className="p-3 text-right">
+                      <td className="px-3 py-2 text-right">
                         <Link 
                           href={`/veiculos/${v.id}`} 
-                          className="inline-flex px-2.5 py-1 bg-slate-50 text-slate-400 hover:text-jc-blue hover:bg-blue-50 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all border border-transparent hover:border-blue-100"
+                          className="inline-flex px-3 py-1.5 bg-slate-50 text-slate-500 hover:text-jc-blue hover:bg-blue-50 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all border border-transparent hover:border-blue-100"
                         >
                           Editar
                         </Link>

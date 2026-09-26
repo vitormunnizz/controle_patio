@@ -6,6 +6,36 @@
   --color-jc-navy: #001F5C;
 }
 
+body {
+  background: #f4f7fb;
+  color: #1e293b;
+}
+
+.app-background {
+  background-color: #f4f7fb;
+  background-image:
+    radial-gradient(ellipse at 8% 0%, rgb(255 255 255 / 92%), transparent 42%),
+    radial-gradient(ellipse at 92% 12%, rgb(219 234 254 / 42%), transparent 34%),
+    linear-gradient(145deg, #f7f9fd 0%, #f1f5fb 58%, #edf3fa 100%);
+}
+
+::selection {
+  background: #bfdbfe;
+  color: #12315b;
+}
+
+button, a, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled), a[href], label[for] {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 /* Esconder barra de rolagem mas manter a funcionalidade */
 @utility no-scrollbar {
   &::-webkit-scrollbar {

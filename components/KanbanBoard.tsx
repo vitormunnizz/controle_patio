@@ -47,8 +47,7 @@ export default function KanbanBoard({ initialData }: { initialData: ColunaCanvas
 
   return (
     <DndContext id={dndId} sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-      {/* Força 7 colunas em telas médias/grandes e remove barras de rolagem lateral */}
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-1 w-full overflow-hidden">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 w-full">
         {data.map((coluna: ColunaCanvas) => (
           <KanbanColumn key={coluna.id} coluna={coluna}>
             {coluna.veiculos.map((veiculo: VeiculoCanvas) => (

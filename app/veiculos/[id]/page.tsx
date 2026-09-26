@@ -49,11 +49,11 @@ export default async function EditarPage({
   }));
 
   return (
-    <main className="min-h-screen bg-slate-100 p-3 sm:p-4 md:p-6 font-sans antialiased text-slate-900 overflow-x-hidden">
+    <main className="app-background min-h-screen p-4 sm:p-6 font-sans antialiased text-slate-900 overflow-x-hidden">
       <div className="max-w-6xl mx-auto space-y-4 w-full min-w-0">
 
         {/* HEADER SLIM RESPONSIVO */}
-        <header className="bg-jc-navy p-3 rounded-2xl flex items-center justify-between text-white shadow-lg border border-white/5 gap-2 w-full min-w-0">
+        <header className="bg-gradient-to-r from-jc-navy via-[#073b83] to-jc-blue p-3 rounded-2xl flex items-center justify-between text-white shadow-md border border-white/10 border-b-2 border-b-jc-yellow/80 gap-2 w-full min-w-0">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <Link href="/" className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all flex items-center justify-center shrink-0">
               <ArrowLeft size={18} strokeWidth={3} />
@@ -82,30 +82,30 @@ export default async function EditarPage({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start w-full min-w-0">
 
           {/* COLUNA FORMULÁRIO (ESQUERDA) */}
-          <div className="lg:col-span-7 bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 overflow-hidden w-full min-w-0">
+          <div className="lg:col-span-7 bg-white/95 rounded-2xl sm:rounded-3xl shadow-[0_10px_30px_rgba(15,23,42,0.06)] border border-white overflow-hidden w-full min-w-0">
             <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
               <Car size={16} className="text-jc-blue shrink-0" />
-              <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest truncate">Informações Gerais</h2>
+              <h2 className="text-xs font-extrabold text-slate-600 uppercase tracking-wider truncate">Informações Gerais</h2>
             </div>
 
             <form action={atualizarVeiculo.bind(null, id)} className="p-3 sm:p-6 space-y-4 w-full min-w-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full min-w-0">
                 <div className="space-y-1 min-w-0">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-1 truncate">Placa</label>
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 truncate">Placa</label>
                   <input
                     name="placa"
                     defaultValue={veiculo.placa}
                     required
                     maxLength={7}
-                    className="w-full border border-slate-100 bg-slate-50 p-2.5 rounded-xl uppercase font-black text-jc-blue outline-none focus:border-jc-blue text-sm"
+                    className="w-full border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl uppercase font-black text-jc-blue outline-none focus:border-jc-blue text-sm"
                   />
                 </div>
                 <div className="space-y-1 min-w-0">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-1 truncate">Status</label>
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 truncate">Status</label>
                   <select
                     name="status_id"
                     defaultValue={veiculo.status_id}
-                    className="w-full border border-slate-100 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue cursor-pointer text-xs sm:text-sm truncate"
+                    className="w-full border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue cursor-pointer text-sm truncate"
                   >
                     {listaStatus.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
                   </select>
@@ -114,32 +114,32 @@ export default async function EditarPage({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full min-w-0">
                 <div className="space-y-1 min-w-0">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-1 flex items-center gap-1 truncate">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 flex items-center gap-1 truncate">
                     <Car size={10} className="shrink-0" /> Modelo
                   </label>
                   <input
                     name="modelo"
                     defaultValue={veiculo.modelo}
                     required
-                    className="w-full border border-slate-100 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue text-xs sm:text-sm"
+                    className="w-full border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue text-sm"
                   />
                 </div>
                 <div className="space-y-1 min-w-0">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-1 flex items-center gap-1 truncate">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 flex items-center gap-1 truncate">
                     <User size={10} className="shrink-0" /> Cliente
                   </label>
                   <input
                     name="cliente"
                     defaultValue={veiculo.cliente}
                     required
-                    className="w-full border border-slate-100 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue text-xs sm:text-sm"
+                    className="w-full border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue text-sm"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full min-w-0">
                 <div className="space-y-1 min-w-0">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-1 flex items-center gap-1 truncate">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 flex items-center gap-1 truncate">
                     <Calendar size={10} className="shrink-0" /> Entrada
                   </label>
                   <input
@@ -147,18 +147,18 @@ export default async function EditarPage({
                     type="date"
                     defaultValue={formatarDataInput(veiculo.data_entrada)}
                     required
-                    className="w-full min-w-0 border border-slate-100 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-700 text-xs outline-none focus:border-jc-blue appearance-none"
+                    className="w-full min-w-0 border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl font-semibold text-slate-700 text-sm outline-none focus:border-jc-blue appearance-none"
                   />
                 </div>
                 <div className="space-y-1 min-w-0">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block ml-1 flex items-center gap-1 truncate">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 flex items-center gap-1 truncate">
                     <Calendar size={10} className="shrink-0" /> Previsão
                   </label>
                   <input
                     name="data_prevista_entrega"
                     type="date"
                     defaultValue={formatarDataInput(veiculo.data_prevista_entrega)}
-                    className="w-full min-w-0 border border-slate-100 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-700 text-xs outline-none focus:border-jc-blue appearance-none"
+                    className="w-full min-w-0 border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl font-semibold text-slate-700 text-sm outline-none focus:border-jc-blue appearance-none"
                   />
                 </div>
               </div>
@@ -172,7 +172,7 @@ export default async function EditarPage({
               </Link>
 
               <div className="space-y-1 w-full min-w-0">
-                <label htmlFor="observacoes" className="mb-1.5 ml-1 block truncate text-[9px] font-black uppercase tracking-widest text-slate-400">
+                <label htmlFor="observacoes" className="mb-1.5 ml-1 block truncate text-[11px] font-bold uppercase tracking-wide text-slate-500">
                   Observações Técnicas
                 </label>
                 <textarea
@@ -180,7 +180,7 @@ export default async function EditarPage({
                   name="observacoes"
                   defaultValue={veiculo.observacoes || ""}
                   rows={2}
-                  className="w-full border border-slate-100 bg-slate-50 p-3 rounded-xl resize-none font-medium text-slate-600 text-xs outline-none focus:border-jc-blue"
+                  className="w-full border border-slate-200 bg-white shadow-sm p-3 rounded-xl resize-none font-medium text-slate-600 text-sm outline-none focus:border-jc-blue"
                 />
               </div>
 
@@ -197,7 +197,7 @@ export default async function EditarPage({
           </div>
 
           {/* COLUNA GALERIA (DIREITA) */}
-          <div className="lg:col-span-5 bg-white p-4 sm:p-5 rounded-2xl sm:rounded-[32px] shadow-sm border border-slate-200 h-full flex flex-col w-full min-w-0 overflow-hidden">
+          <div className="lg:col-span-5 bg-white/95 p-4 sm:p-5 rounded-2xl sm:rounded-[32px] shadow-[0_10px_30px_rgba(15,23,42,0.06)] border border-white h-full flex flex-col w-full min-w-0 overflow-hidden">
             <div className="flex justify-between items-center mb-4 sm:mb-6 gap-2 min-w-0">
               <div className="flex items-center gap-2 min-w-0">
                 <Camera size={16} className="text-jc-blue shrink-0" />
