@@ -18,12 +18,11 @@ export function BotaoExcluir({ veiculoId }: { veiculoId: number }) {
     setLoading(true);
 
     try {
-      // 2. Chama a Server Action, que agora deleta as fotos do Google Drive
-      // e remove o registro do banco de dados de forma centralizada.
+      // 2. Chama a Server Action, que remove as fotos locais e os registros relacionados.
       await excluirVeiculo(veiculoId);
     } catch (error) {
       console.error("Erro no processo de exclusão:", error);
-      alert("Ocorreu um erro ao tentar excluir o veículo.");
+      alert("Não conseguimos excluir o veículo. Tente novamente.");
       setLoading(false);
     }
   };

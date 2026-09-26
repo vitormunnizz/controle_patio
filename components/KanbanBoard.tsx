@@ -36,7 +36,12 @@ export default function KanbanBoard({ initialData }: { initialData: ColunaCanvas
           setData(clonedData);
         }
       }
-      await atualizarStatusVeiculo(veiculoId, novoStatusId);
+      try {
+        await atualizarStatusVeiculo(veiculoId, novoStatusId);
+      } catch {
+        setData(data);
+        alert("Não conseguimos atualizar o status. Tente novamente.");
+      }
     }
   }
 

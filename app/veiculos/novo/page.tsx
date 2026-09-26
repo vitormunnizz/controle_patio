@@ -1,11 +1,16 @@
 import { db } from "@/db";
 import { status } from "@/db/schema";
 import { asc } from "drizzle-orm";
-import { criarVeiculo } from "./actions";
+import { criarVeiculo, criarVeiculoEChecklist } from "@/app/actions";
 import Link from "next/link";
-import { ArrowLeft, Car, User, CheckCircle2, ChevronDown, Calendar } from "lucide-react";
+import { ArrowLeft, Car, User, CheckCircle2, ChevronDown, Calendar, ClipboardCheck } from "lucide-react";
 
-export default async function NovoVeiculoPage() {
+export default async function NovoVeiculoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ erro?: string }>;
+}) {
+  const { erro } = await searchParams;
   const listaStatus = await db.select().from(status).orderBy(asc(status.ordem));
 
   return (
@@ -38,6 +43,16 @@ export default async function NovoVeiculoPage() {
           </div>
 
           <form action={criarVeiculo} className="p-4 sm:p-6 space-y-4 sm:space-y-5 w-full min-w-0">
+            {erro === "placa-existente" && (
+              <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                Já existe um veículo cadastrado com essa placa. Confira a placa ou abra o cadastro existente para editá-lo.
+              </p>
+            )}
+            {erro === "salvar" && (
+              <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                Não conseguimos cadastrar o veículo agora. Confira os dados e tente novamente.
+              </p>
+            )}
             
             {/* GRID DE CAMPOS (2 COLUNAS) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full min-w-0">
@@ -127,14 +142,24 @@ export default async function NovoVeiculoPage() {
               </div>
             </div>
 
+            <button
+              type="submit"
+              formAction={criarVeiculoEChecklist}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border-b-4 border-blue-900 bg-jc-blue px-5 py-3.5 text-xs font-black uppercase tracking-wide text-white shadow-sm transition-colors hover:bg-jc-navy active:scale-[0.99]"
+            >
+              <ClipboardCheck size={18} strokeWidth={2.5} className="text-white" />
+              Salvar e abrir checklist
+            </button>
+
             {/* OBSERVAÇÕES TÉCNICAS */}
             <div className="space-y-1 w-full min-w-0">
-              <label className="text-[9px] font-black text-slate-400 uppercase mb-1.5 tracking-widest ml-1 block truncate">
+              <label htmlFor="observacoes" className="mb-1.5 ml-1 block truncate text-[9px] font-black uppercase tracking-widest text-slate-400">
                 Observações Técnicas / Serviço
               </label>
               <textarea
+                id="observacoes"
                 name="observacoes"
-                rows={3}
+                rows={2}
                 placeholder="Descrição resumida do serviço a ser realizado..."
                 className="w-full border border-slate-100 bg-slate-50 p-3 rounded-xl resize-none font-medium text-slate-600 text-xs outline-none focus:border-jc-blue"
               />

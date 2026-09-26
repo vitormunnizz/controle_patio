@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { X, Trash2, Camera, Loader2 } from "lucide-react";
-import { deletarFotoDrive } from "@/app/veiculos/[id]/actions";
+import { deletarFotoLocal } from "@/app/veiculos/[id]/actions";
 import { FotoSerializada } from "@/types/kanban";
 
 export function GaleriaFotos({ fotos, veiculoId }: { fotos: FotoSerializada[], veiculoId: number }) {
@@ -15,9 +15,9 @@ export function GaleriaFotos({ fotos, veiculoId }: { fotos: FotoSerializada[], v
 
     setExcluindoId(fotoId);
     try {
-      await deletarFotoDrive(fotoId, veiculoId, url);
+      await deletarFotoLocal(fotoId, veiculoId, url);
     } catch {
-      alert("Erro ao excluir imagem.");
+      alert("Não conseguimos remover essa foto. Tente novamente.");
     } finally {
       setExcluindoId(null);
     }

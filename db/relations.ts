@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { status, veiculos, fotos } from "./schema";
+import { status, veiculos, fotos, checklistTecnico } from "./schema";
 
 export const statusRelations = relations(status, ({ many }) => ({
   veiculos: many(veiculos),
@@ -11,6 +11,14 @@ export const veiculosRelations = relations(veiculos, ({ one, many }) => ({
     references: [status.id],
   }),
   fotos: many(fotos),
+  checklistTecnico: one(checklistTecnico),
+}));
+
+export const checklistTecnicoRelations = relations(checklistTecnico, ({ one }) => ({
+  veiculo: one(veiculos, {
+    fields: [checklistTecnico.veiculo_id],
+    references: [veiculos.id],
+  }),
 }));
 
 export const fotosRelations = relations(fotos, ({ one }) => ({

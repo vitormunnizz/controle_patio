@@ -2,7 +2,7 @@
 
 import { Camera, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { salvarFotoDrive } from "@/app/veiculos/[id]/actions";
+import { salvarFotoLocal } from "@/app/veiculos/[id]/actions";
 import imageCompression from "browser-image-compression";
 
 export function UploadFoto({ veiculoId }: { veiculoId: number }) {
@@ -23,9 +23,9 @@ export function UploadFoto({ veiculoId }: { veiculoId: number }) {
       const formData = new FormData();
       formData.append("file", compressed);
 
-      await salvarFotoDrive(veiculoId, formData);
+      await salvarFotoLocal(veiculoId, formData);
     } catch {
-      alert("Erro ao salvar no Google Drive.");
+      alert("Não conseguimos salvar a foto. Tente novamente.");
     } finally {
       setLoading(false);
       // Limpa o input para permitir o upload da mesma imagem novamente, se necessário
@@ -40,12 +40,12 @@ export function UploadFoto({ veiculoId }: { veiculoId: number }) {
         accept="image/*"
         capture="environment"
         className="hidden"
-        id="up-drive"
+        id={`upload-foto-${veiculoId}`}
         onChange={handleUpload}
         disabled={loading}
       />
       <label
-        htmlFor="up-drive"
+        htmlFor={`upload-foto-${veiculoId}`}
         className="h-9 px-4 bg-jc-blue hover:bg-jc-navy text-white rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer transition-all flex items-center gap-2 shadow-sm"
       >
         {loading ? <Loader2 className="animate-spin" size={14} /> : <Camera size={14} />}

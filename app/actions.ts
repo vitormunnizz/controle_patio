@@ -1,41 +1,11 @@
 "use server";
 
 import { db } from "@/db";
-import { veiculos as veiculosTable, status as statusTable } from "@/db/schema";
+import { checklistTecnico, veiculos as veiculosTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-
-// Função auxiliar para salvar o arquivo localmente em public/uploads
-async function salvarArquivoLocal(buffer: Buffer, nomeArquivo: string): Promise<string> {
-  const pastaUploads = path.join(process.cwd(), "public", "uploads");
-  
-  // Garante que a pasta public/uploads existe
-  await mkdir(pastaUploads, { recursive: true });
-
-  const caminhoCompleto = path.join(pastaUploads, nomeArquivo);
-  await writeFile(caminhoCompleto, buffer);
-
-  // Retorna a URL relativa do arquivo local
-  return `/uploads/${nomeArquivo}`;
-}
-
-export async function criarVeiculo(formData: FormData) {
-  await db.insert(veiculosTable).values({
-    placa: formData.get("placa") as string,
-    modelo: formData.get("modelo") as string,
-    cliente: formData.get("cliente") as string,
-    status_id: Number(formData.get("status_id")),
-    data_entrada: formData.get("data_entrada") as string,
-    data_prevista_entrega: (formData.get("data_prevista_entrega") as string) || null,
-    observacoes: formData.get("observacoes") as string,
-  });
-
-  revalidatePath("/");
-  redirect("/");
-}
+import { ITENS_VEICULO } from "@/lib/checklist-tecnico";
 
 export async function atualizarStatusVeiculo(veiculoId: number, novoStatusId: number) {
   await db.update(veiculosTable)
@@ -45,28 +15,59 @@ export async function atualizarStatusVeiculo(veiculoId: number, novoStatusId: nu
   revalidatePath("/");
 }
 
-// Backup salvo localmente na pasta public/uploads
-export async function backupDadosParaDrive() {
+async function inserirVeiculo(formData: FormData) {
+  const placa = formData.get("placa") as string;
+  let veiculoId = 0;
+
+  await db.transaction(async (tx) => {
+    const [veiculo] = await tx.insert(veiculosTable).values({
+      placa,
+      modelo: formData.get("modelo") as string,
+      cliente: formData.get("cliente") as string,
+      status_id: Number(formData.get("status_id")),
+      data_entrada: formData.get("data_entrada") as string,
+      data_prevista_entrega: (formData.get("data_prevista_entrega") as string) || null,
+      observacoes: formData.get("observacoes") as string,
+    }).returning({ id: veiculosTable.id });
+
+    await tx.insert(checklistTecnico).values({
+      veiculo_id: veiculo.id,
+      itens: Object.fromEntries(ITENS_VEICULO.map(({ id }) => [id, false])),
+    });
+    veiculoId = veiculo.id;
+  });
+
+  return veiculoId;
+}
+
+async function inserirVeiculoComTratamentoDeErro(formData: FormData) {
   try {
-    const dados = await db
-      .select()
-      .from(veiculosTable)
-      .innerJoin(statusTable, eq(veiculosTable.status_id, statusTable.id));
-
-    const cabecalho = "Placa;Modelo;Cliente;Entrada;Status\n";
-    const linhas = dados
-      .map(({ veiculos: v, status: s }) => `${v.placa};${v.modelo};${v.cliente};${v.data_entrada};${s.nome}`)
-      .join("\n");
-
-    const buffer = Buffer.from(cabecalho + linhas, "utf-8");
-    const nomeArquivo = `BACKUP_JC_${new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")}.csv`;
-
-    // Salva o arquivo .csv localmente
-    const urlRelativa = await salvarArquivoLocal(buffer, nomeArquivo);
-
-    return { success: true, path: urlRelativa };
+    return await inserirVeiculo(formData);
   } catch (error) {
-    console.error("Erro ao realizar backup local:", error);
-    throw new Error("Falha ao salvar o arquivo de backup localmente.");
+    if (isUniqueConstraintViolation(error)) redirect("/veiculos/novo?erro=placa-existente");
+
+    console.error("Falha ao cadastrar veículo:", error);
+    redirect("/veiculos/novo?erro=salvar");
   }
+}
+
+export async function criarVeiculo(formData: FormData) {
+  const veiculoId = await inserirVeiculoComTratamentoDeErro(formData);
+  revalidatePath("/");
+  redirect(`/veiculos/${veiculoId}`);
+}
+
+export async function criarVeiculoEChecklist(formData: FormData) {
+  const veiculoId = await inserirVeiculoComTratamentoDeErro(formData);
+  revalidatePath("/");
+  redirect(`/veiculos/${veiculoId}/checklist`);
+}
+
+function isUniqueConstraintViolation(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+
+  const databaseError = error as { code?: unknown; cause?: unknown };
+  return databaseError.code === "23505" || (
+    databaseError.cause !== error && isUniqueConstraintViolation(databaseError.cause)
+  );
 }

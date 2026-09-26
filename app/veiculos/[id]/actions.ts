@@ -1,13 +1,14 @@
 "use server";
 
 import { db } from "@/db";
-import { veiculos, fotos, status as statusTable } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { veiculos, fotos, checklistTecnico } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
+import { ITENS_VEICULO } from "@/lib/checklist-tecnico";
 
 // --- AUXILIAR: SALVAR ARQUIVO LOCALMENTE ---
 async function salvarArquivoLocal(buffer: Buffer, nomeArquivo: string): Promise<string> {
@@ -39,23 +40,48 @@ async function deletarArquivoLocal(urlRelativa: string) {
 
 // --- AÇÃO: ATUALIZAR VEÍCULO ---
 export async function atualizarVeiculo(id: number, formData: FormData) {
-  await db.update(veiculos).set({
-    placa: formData.get("placa") as string,
-    modelo: formData.get("modelo") as string,
-    cliente: formData.get("cliente") as string,
-    status_id: Number(formData.get("status_id")),
-    data_entrada: formData.get("data_entrada") as string,
-    data_prevista_entrega: (formData.get("data_prevista_entrega") as string) || null,
-    observacoes: formData.get("observacoes") as string,
-  }).where(eq(veiculos.id, id));
+  try {
+    await db.update(veiculos).set({
+      placa: formData.get("placa") as string,
+      modelo: formData.get("modelo") as string,
+      cliente: formData.get("cliente") as string,
+      status_id: Number(formData.get("status_id")),
+      data_entrada: formData.get("data_entrada") as string,
+      data_prevista_entrega: (formData.get("data_prevista_entrega") as string) || null,
+      observacoes: formData.get("observacoes") as string,
+    }).where(eq(veiculos.id, id));
+  } catch (error) {
+    console.error("Falha ao atualizar veículo:", error);
+    redirect(`/veiculos/${id}?erro=salvar`);
+  }
 
   revalidatePath("/");
   revalidatePath(`/veiculos/${id}`);
-  redirect("/");
+  redirect(`/veiculos/${id}`);
+}
+
+export async function salvarChecklistVeiculo(id: number, formData: FormData) {
+  const itens = Object.fromEntries(
+    ITENS_VEICULO.map(({ id: itemId }) => [itemId, formData.get(`item_${itemId}`) === "sim"])
+  );
+
+  try {
+    await db.insert(checklistTecnico).values({ veiculo_id: id, itens }).onConflictDoUpdate({
+      target: checklistTecnico.veiculo_id,
+      set: { itens, updated_at: new Date() },
+    });
+  } catch (error) {
+    console.error("Falha ao salvar checklist do veículo:", error);
+    redirect(`/veiculos/${id}/checklist?erro=salvar`);
+  }
+
+  revalidatePath(`/veiculos/${id}`);
+  revalidatePath(`/veiculos/${id}/checklist`);
+  redirect(`/veiculos/${id}?checklist=salvo`);
 }
 
 // --- AÇÃO: SALVAR FOTO LOCALMENTE + GRAVAR NO BANCO ---
-export async function salvarFotoDrive(veiculoId: number, formData: FormData) {
+export async function salvarFotoLocal(veiculoId: number, formData: FormData) {
   const file = formData.get("file") as File;
   if (!file) throw new Error("Arquivo não encontrado no envio");
 
@@ -78,12 +104,12 @@ export async function salvarFotoDrive(veiculoId: number, formData: FormData) {
     revalidatePath("/");
   } catch (error) {
     console.error("Erro no upload local:", error);
-    throw new Error("Falha ao salvar a imagem localmente.");
+    throw new Error("Não foi possível salvar a foto.");
   }
 }
 
 // --- AÇÃO: DELETAR FOTO LOCAL E DO BANCO ---
-export async function deletarFotoDrive(fotoId: number, veiculoId: number, url: string) {
+export async function deletarFotoLocal(fotoId: number, veiculoId: number, url: string) {
   // 1. Apaga o arquivo físico da pasta public/uploads
   await deletarArquivoLocal(url);
 
@@ -116,37 +142,9 @@ export async function excluirVeiculo(id: number) {
     revalidatePath("/");
   } catch (error) {
     console.error("Erro detalhado na exclusão do veículo:", error);
-    throw new Error("Erro no processo de exclusão.");
+    throw new Error("Não foi possível excluir o veículo.");
   }
 
   redirect("/");
 }
 
-// --- AÇÃO: BACKUP DO BANCO PARA ARQUIVO CSV LOCAL ---
-export async function backupDadosParaDrive() {
-  try {
-    const dados = await db
-      .select()
-      .from(veiculos)
-      .innerJoin(statusTable, eq(veiculos.status_id, statusTable.id))
-      .orderBy(asc(veiculos.id));
-
-    const cabecalho = "ID;Placa;Modelo;Cliente;Entrada;Status\n";
-    const linhas = dados
-      .map(
-        ({ veiculos: v, status: s }) =>
-          `${v.id};${v.placa};${v.modelo};${v.cliente};${v.data_entrada};${s.nome}`
-      )
-      .join("\n");
-
-    const buffer = Buffer.from(cabecalho + linhas, "utf-8");
-    const nomeArquivo = `BACKUP_JC_${new Date().toLocaleDateString("pt-BR").replace(/\//g, "-")}.csv`;
-
-    const urlRelativa = await salvarArquivoLocal(buffer, nomeArquivo);
-
-    return { success: true, path: urlRelativa };
-  } catch (error) {
-    console.error("Erro no backup local:", error);
-    throw new Error("Falha ao gerar planilha de backup.");
-  }
-}

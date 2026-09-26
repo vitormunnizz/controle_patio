@@ -3,15 +3,23 @@ import { status as statusTable, veiculos as veiculosTable } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { atualizarVeiculo } from "./actions";
 import Link from "next/link";
-import { ArrowLeft, Car, User, Calendar, Camera } from "lucide-react";
+import { ArrowLeft, Car, User, Calendar, Camera, ClipboardCheck } from "lucide-react";
 import { notFound } from "next/navigation";
 import { UploadFoto } from "@/components/UploadFoto";
 import { BotaoExcluir } from "@/components/BotaoExcluir";
 import { GaleriaFotos } from "@/components/GaleriaFotos";
 import { FotoSerializada } from "@/types/kanban";
+import { AvisoChecklistSalvo } from "@/components/AvisoChecklistSalvo";
 
-export default async function EditarPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditarPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ erro?: string; checklist?: string }>;
+}) {
   const { id: rawId } = await params;
+  const { erro, checklist } = await searchParams;
   const id = Number(rawId);
 
   if (isNaN(id)) return notFound();
@@ -59,6 +67,16 @@ export default async function EditarPage({ params }: { params: Promise<{ id: str
             Placa: {veiculo.placa}
           </span>
         </header>
+
+        {checklist === "salvo" && (
+          <AvisoChecklistSalvo />
+        )}
+
+        {erro === "salvar" && (
+          <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+            Não conseguimos salvar as alterações. Confira os dados e tente novamente.
+          </p>
+        )}
 
         {/* GRID PRINCIPAL */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start w-full min-w-0">
@@ -145,14 +163,23 @@ export default async function EditarPage({ params }: { params: Promise<{ id: str
                 </div>
               </div>
 
+              <Link
+                href={`/veiculos/${id}/checklist`}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border-b-4 border-blue-900 bg-jc-blue px-5 py-3.5 text-xs font-black uppercase tracking-wide text-white shadow-sm transition-colors hover:bg-jc-navy active:scale-[0.99]"
+              >
+                <ClipboardCheck size={18} strokeWidth={2.5} className="text-white" />
+                Abrir checklist
+              </Link>
+
               <div className="space-y-1 w-full min-w-0">
-                <label className="text-[9px] font-black text-slate-400 uppercase mb-1.5 tracking-widest ml-1 block truncate">
+                <label htmlFor="observacoes" className="mb-1.5 ml-1 block truncate text-[9px] font-black uppercase tracking-widest text-slate-400">
                   Observações Técnicas
                 </label>
                 <textarea
+                  id="observacoes"
                   name="observacoes"
                   defaultValue={veiculo.observacoes || ""}
-                  rows={3}
+                  rows={2}
                   className="w-full border border-slate-100 bg-slate-50 p-3 rounded-xl resize-none font-medium text-slate-600 text-xs outline-none focus:border-jc-blue"
                 />
               </div>

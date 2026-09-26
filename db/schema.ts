@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, integer, text, timestamp, date } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, integer, text, timestamp, date, jsonb } from "drizzle-orm/pg-core";
 
 export const status = pgTable("status", {
   id: serial("id").primaryKey().notNull(),
@@ -24,4 +24,12 @@ export const fotos = pgTable("fotos", {
   veiculo_id: integer("veiculo_id").notNull().references(() => veiculos.id, { onDelete: "cascade" }),
   url: text("url").notNull(),
   created_at: timestamp("created_at").defaultNow(),
+});
+
+export const checklistTecnico = pgTable("checklist_tecnico", {
+  id: serial("id").primaryKey().notNull(),
+  veiculo_id: integer("veiculo_id").notNull().unique().references(() => veiculos.id, { onDelete: "cascade" }),
+  itens: jsonb("itens").$type<Record<string, boolean>>().notNull().default({}),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
 });
