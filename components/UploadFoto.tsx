@@ -15,8 +15,9 @@ export function UploadFoto({ veiculoId }: { veiculoId: number }) {
     setLoading(true);
     try {
       const compressed = await imageCompression(file, {
-        maxSizeMB: 0.7,
-        maxWidthOrHeight: 1200,
+        maxSizeMB: 2,
+        maxWidthOrHeight: 2400,
+        initialQuality: 0.9,
         fileType: "image/webp",
       });
 

@@ -36,6 +36,38 @@ button:disabled {
   cursor: not-allowed;
 }
 
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .print-ui {
+    display: none !important;
+  }
+
+  .print-page {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .pdf-main {
+    min-height: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .print-group {
+    break-inside: avoid;
+  }
+}
+
 /* Esconder barra de rolagem mas manter a funcionalidade */
 @utility no-scrollbar {
   &::-webkit-scrollbar {

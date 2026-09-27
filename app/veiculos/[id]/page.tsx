@@ -3,13 +3,14 @@ import { status as statusTable, veiculos as veiculosTable } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { atualizarVeiculo } from "./actions";
 import Link from "next/link";
-import { ArrowLeft, Car, User, Calendar, Camera, ClipboardCheck } from "lucide-react";
+import { ArrowLeft, Car, User, Calendar, Camera, FileDown } from "lucide-react";
 import { notFound } from "next/navigation";
 import { UploadFoto } from "@/components/UploadFoto";
 import { BotaoExcluir } from "@/components/BotaoExcluir";
 import { GaleriaFotos } from "@/components/GaleriaFotos";
 import { FotoSerializada } from "@/types/kanban";
 import { AvisoChecklistSalvo } from "@/components/AvisoChecklistSalvo";
+import { NavegacaoChecklist } from "@/components/NavegacaoChecklist";
 
 export default async function EditarPage({
   params,
@@ -63,9 +64,17 @@ export default async function EditarPage({
               Ficha Técnica
             </h1>
           </div>
-          <span className="text-[9px] sm:text-[10px] font-black bg-white text-jc-navy px-2 sm:px-3 py-1 rounded-lg uppercase tracking-widest shadow-sm shrink-0">
-            Placa: {veiculo.placa}
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href={`/veiculos/${id}/pdf`}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-white/20"
+            >
+              <FileDown size={14} /> Gerar PDF
+            </Link>
+            <span className="text-[9px] sm:text-[10px] font-black bg-white text-jc-navy px-2 sm:px-3 py-1 rounded-lg uppercase tracking-widest shadow-sm">
+              Placa: {veiculo.placa}
+            </span>
+          </div>
         </header>
 
         {checklist === "salvo" && (
@@ -88,7 +97,7 @@ export default async function EditarPage({
               <h2 className="text-xs font-extrabold text-slate-600 uppercase tracking-wider truncate">Informações Gerais</h2>
             </div>
 
-            <form action={atualizarVeiculo.bind(null, id)} className="p-3 sm:p-6 space-y-4 w-full min-w-0">
+            <form id={`editar-veiculo-${id}`} action={atualizarVeiculo.bind(null, id)} className="p-3 sm:p-6 space-y-4 w-full min-w-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full min-w-0">
                 <div className="space-y-1 min-w-0">
                   <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 truncate">Placa</label>
@@ -163,13 +172,7 @@ export default async function EditarPage({
                 </div>
               </div>
 
-              <Link
-                href={`/veiculos/${id}/checklist`}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl border-b-4 border-blue-900 bg-jc-blue px-5 py-3.5 text-xs font-black uppercase tracking-wide text-white shadow-sm transition-colors hover:bg-jc-navy active:scale-[0.99]"
-              >
-                <ClipboardCheck size={18} strokeWidth={2.5} className="text-white" />
-                Abrir checklist
-              </Link>
+              <NavegacaoChecklist veiculoId={id} erro={erro} />
 
               <div className="space-y-1 w-full min-w-0">
                 <label htmlFor="observacoes" className="mb-1.5 ml-1 block truncate text-[11px] font-bold uppercase tracking-wide text-slate-500">
