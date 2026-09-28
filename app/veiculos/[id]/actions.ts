@@ -9,6 +9,7 @@ import { writeFile, mkdir, unlink } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 import { ITENS_VEICULO } from "@/lib/checklist-tecnico";
+import { isUniqueConstraintViolation } from "@/lib/db-errors";
 
 // --- AUXILIAR: SALVAR ARQUIVO LOCALMENTE ---
 async function salvarArquivoLocal(buffer: Buffer, nomeArquivo: string): Promise<string> {
@@ -42,7 +43,7 @@ async function deletarArquivoLocal(urlRelativa: string) {
 export async function atualizarVeiculo(id: number, formData: FormData) {
   try {
     await db.update(veiculos).set({
-      placa: formData.get("placa") as string,
+      placa: String(formData.get("placa") ?? "").trim().toUpperCase(),
       modelo: formData.get("modelo") as string,
       cliente: formData.get("cliente") as string,
       status_id: Number(formData.get("status_id")),
@@ -51,6 +52,7 @@ export async function atualizarVeiculo(id: number, formData: FormData) {
       observacoes: formData.get("observacoes") as string,
     }).where(eq(veiculos.id, id));
   } catch (error) {
+    if (isUniqueConstraintViolation(error)) redirect(`/veiculos/${id}?erro=placa-existente`);
     console.error("Falha ao atualizar veículo:", error);
     redirect(`/veiculos/${id}?erro=salvar`);
   }
@@ -83,16 +85,21 @@ export async function salvarChecklistVeiculo(id: number, formData: FormData) {
 // --- AÇÃO: SALVAR FOTO LOCALMENTE + GRAVAR NO BANCO ---
 export async function salvarFotoLocal(veiculoId: number, formData: FormData) {
   const file = formData.get("file") as File;
-  if (!file) throw new Error("Arquivo não encontrado no envio");
+  if (!(file instanceof File) || file.size === 0 || file.size > 2 * 1024 * 1024) {
+    throw new Error("A foto está vazia ou ultrapassa o tamanho permitido.");
+  }
+  if (file.type !== "image/webp") throw new Error("Não foi possível preparar a foto.");
 
   const buffer = Buffer.from(await file.arrayBuffer());
+  let fotoSalva: string | null = null;
 
   try {
-    const extensao = path.extname(file.name) || ".webp";
+    const extensao = ".webp";
     const nomeArquivo = `VEICULO_${veiculoId}_${Date.now()}${extensao}`;
 
     // 1. Salva a foto na pasta public/uploads
     const publicUrl = await salvarArquivoLocal(buffer, nomeArquivo);
+    fotoSalva = publicUrl;
 
     // 2. Salva a URL local (/uploads/VEICULO_...) no banco de dados
     await db.insert(fotos).values({
@@ -103,6 +110,7 @@ export async function salvarFotoLocal(veiculoId: number, formData: FormData) {
     revalidatePath(`/veiculos/${veiculoId}`);
     revalidatePath("/");
   } catch (error) {
+    if (fotoSalva) await deletarArquivoLocal(fotoSalva);
     console.error("Erro no upload local:", error);
     throw new Error("Não foi possível salvar a foto.");
   }

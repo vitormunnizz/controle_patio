@@ -47,7 +47,7 @@ export default function KanbanBoard({ initialData }: { initialData: ColunaCanvas
 
   return (
     <DndContext id={dndId} sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 w-full">
+      <div className="no-scrollbar flex w-full snap-x snap-mandatory gap-2 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 lg:grid-cols-4 xl:grid-cols-7">
         {data.map((coluna: ColunaCanvas) => (
           <KanbanColumn key={coluna.id} coluna={coluna}>
             {coluna.veiculos.map((veiculo: VeiculoCanvas) => (

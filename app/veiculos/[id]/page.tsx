@@ -86,6 +86,11 @@ export default async function EditarPage({
             Não conseguimos salvar as alterações. Confira os dados e tente novamente.
           </p>
         )}
+        {erro === "placa-existente" && (
+          <p role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-800">
+            Já existe outro veículo cadastrado com essa placa. Confira o número informado.
+          </p>
+        )}
 
         {/* GRID PRINCIPAL */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start w-full min-w-0">

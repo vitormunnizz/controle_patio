@@ -29,7 +29,6 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
 
   // Queries
   const [totalResult] = await db.select({ value: count() }).from(veiculosTable).where(filtroData);
-  const [entreguesResult] = await db.select({ value: count() }).from(veiculosTable).where(and(filtroData, eq(veiculosTable.status_id, 7)));
 
   const statusQuery = await db.select({ 
     name: statusTable.nome, 
@@ -42,6 +41,9 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
 
   const statusData = statusQuery.map(s => ({ name: s.name, total: Number(s.total) }));
   const totalVeiculos = Number(totalResult?.value || 0);
+  const totalFinalizados = statusData
+    .filter((item) => item.name === "Finalizado" || item.name === "Entregue")
+    .reduce((total, item) => total + item.total, 0);
 
   return (
     <main className="app-background min-h-screen lg:h-screen p-2.5 sm:p-3 font-sans overflow-x-hidden lg:overflow-hidden">
@@ -73,8 +75,8 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
         {/* MÉTRICAS MINI */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 shrink-0">
           <StatCard title="Entradas" value={totalVeiculos} icon={<Car size={18} />} color="text-jc-blue" bgColor="bg-blue-50" />
-          <StatCard title="Finalizados" value={Number(entreguesResult?.value || 0)} icon={<CheckCircle2 size={18} />} color="text-green-600" bgColor="bg-green-50" />
-          <StatCard title="Taxa" value={totalVeiculos > 0 ? Math.round((Number(entreguesResult?.value) / totalVeiculos) * 100) : 0} unit="%" icon={<TrendingUp size={18} />} color="text-purple-600" bgColor="bg-purple-50" />
+          <StatCard title="Finalizados" value={totalFinalizados} icon={<CheckCircle2 size={18} />} color="text-green-600" bgColor="bg-green-50" />
+          <StatCard title="Taxa" value={totalVeiculos > 0 ? Math.round((totalFinalizados / totalVeiculos) * 100) : 0} unit="%" icon={<TrendingUp size={18} />} color="text-purple-600" bgColor="bg-purple-50" />
           <StatCard title="Período" value={from ? (Math.ceil((new Date(dataFimStr).getTime() - new Date(dataInicioStr).getTime()) / (1000 * 3600 * 24))) : 30} unit="d" icon={<Clock size={18} />} color="text-slate-500" bgColor="bg-slate-200" />
         </div>
 

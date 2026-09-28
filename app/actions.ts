@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ITENS_VEICULO } from "@/lib/checklist-tecnico";
+import { isUniqueConstraintViolation } from "@/lib/db-errors";
 
 export async function atualizarStatusVeiculo(veiculoId: number, novoStatusId: number) {
   await db.update(veiculosTable)
@@ -16,7 +17,7 @@ export async function atualizarStatusVeiculo(veiculoId: number, novoStatusId: nu
 }
 
 async function inserirVeiculo(formData: FormData) {
-  const placa = formData.get("placa") as string;
+  const placa = String(formData.get("placa") ?? "").trim().toUpperCase();
   let veiculoId = 0;
 
   await db.transaction(async (tx) => {
@@ -61,13 +62,4 @@ export async function criarVeiculoEChecklist(formData: FormData) {
   const veiculoId = await inserirVeiculoComTratamentoDeErro(formData);
   revalidatePath("/");
   redirect(`/veiculos/${veiculoId}/checklist`);
-}
-
-function isUniqueConstraintViolation(error: unknown): boolean {
-  if (!error || typeof error !== "object") return false;
-
-  const databaseError = error as { code?: unknown; cause?: unknown };
-  return databaseError.code === "23505" || (
-    databaseError.cause !== error && isUniqueConstraintViolation(databaseError.cause)
-  );
 }

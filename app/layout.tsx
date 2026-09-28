@@ -1,7 +1,4 @@
 import "./globals.css";
-import { Inter } from "next/font/google";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "JC Pneus - Gestão de Veículos",
@@ -19,7 +16,7 @@ export default function RootLayout({
         Isso ignora atributos injetados por extensões como ColorZilla (cz-shortcut-listen).
       */}
       <body 
-        className={`${inter.className} bg-slate-50 antialiased`} 
+        className="bg-slate-50 font-sans antialiased"
         suppressHydrationWarning
       >
         {children}
