@@ -19,6 +19,218 @@ body {
     linear-gradient(145deg, #f7f9fd 0%, #f1f5fb 58%, #edf3fa 100%);
 }
 
+.page-container {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+}
+
+.page-main {
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 1rem;
+}
+
+.page-main-pdf {
+  padding-bottom: 6rem;
+}
+
+.page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.page-header {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 4rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-bottom: 2px solid rgb(255 215 0 / 85%);
+  border-radius: 0.875rem;
+  background: linear-gradient(100deg, #001f5c 0%, #073b83 52%, #0047bb 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgb(15 23 42 / 12%);
+}
+
+.page-header-main,
+.page-header-actions {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.page-header-main {
+  flex: 1 1 auto;
+}
+
+.page-header-copy {
+  min-width: 0;
+}
+
+.page-header-title {
+  margin: 0;
+  overflow: hidden;
+  color: white;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.25rem;
+  letter-spacing: -0.015em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-header-subtitle {
+  margin: 0.125rem 0 0;
+  overflow: hidden;
+  color: rgb(219 234 254 / 90%);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-header-back {
+  display: inline-flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 12%);
+  color: white;
+  transition: background-color 150ms ease;
+}
+
+.page-header-back:hover {
+  background: rgb(255 255 255 / 22%);
+}
+
+.page-header-actions {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
+.page-header-action {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 0.625rem;
+  background: rgb(255 255 255 / 12%);
+  padding: 0 0.75rem;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1rem;
+  white-space: nowrap;
+  transition: background-color 150ms ease;
+}
+
+.page-header-action:hover {
+  background: rgb(255 255 255 / 22%);
+}
+
+.page-header-action-primary {
+  border-bottom: 2px solid #c99b00;
+  background: #ffd700;
+  color: #001f5c;
+}
+
+.page-header-action-primary:hover {
+  background: #facc15;
+}
+
+.page-header-badge {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  border-radius: 0.5rem;
+  background: white;
+  padding: 0 0.625rem;
+  color: #001f5c;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1rem;
+  white-space: nowrap;
+}
+
+.page-header-center {
+  position: absolute;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  transform: translateX(-50%);
+}
+
+.page-section-title {
+  margin: 0;
+  color: #1e293b;
+  font-size: 0.875rem;
+  font-weight: 800;
+  line-height: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.page-field-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1rem;
+  letter-spacing: 0.025em;
+}
+
+.page-body-text {
+  font-size: 0.875rem;
+  line-height: 1.375rem;
+}
+
+.page-caption {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+@media (max-width: 639px) {
+  .page-header-badge {
+    display: none;
+  }
+}
+
+@media (min-width: 640px) {
+  .page-main {
+    padding: 1.5rem;
+  }
+
+  .page-main-pdf {
+    padding-bottom: 6rem;
+  }
+
+  .page-stack {
+    gap: 1rem;
+  }
+
+  .page-header {
+    padding-inline: 1rem;
+  }
+
+  .page-header-title {
+    font-size: 1.125rem;
+    line-height: 1.5rem;
+  }
+
+  .page-section-title {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+}
+
 ::selection {
   background: #bfdbfe;
   color: #12315b;
@@ -34,6 +246,11 @@ button:not(:disabled), a[href], label[for] {
 
 button:disabled {
   cursor: not-allowed;
+}
+
+:where(a[href], button, input, select, textarea, [role="button"]):focus-visible {
+  outline: 2px solid #0047bb;
+  outline-offset: 2px;
 }
 
 @media print {
@@ -56,11 +273,21 @@ button:disabled {
     background: #fff !important;
     padding: 0 !important;
     box-shadow: none !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 
   .pdf-main {
+    height: auto !important;
     min-height: 0 !important;
     padding-bottom: 0 !important;
+    overflow: visible !important;
+  }
+
+  .pdf-main > .page-container {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   .print-group {

@@ -32,7 +32,7 @@ export function BotaoExcluir({ veiculoId }: { veiculoId: number }) {
       type="button"
       onClick={handleExcluir}
       disabled={loading}
-      className="px-6 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-100 font-black uppercase text-[10px] tracking-widest py-4 rounded-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm active:scale-95"
+      className="w-full min-[360px]:w-auto px-3 sm:px-6 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-100 font-black uppercase text-xs tracking-wide py-3.5 sm:py-4 rounded-2xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm active:scale-95"
     >
       {loading ? (
         <>
@@ -42,7 +42,8 @@ export function BotaoExcluir({ veiculoId }: { veiculoId: number }) {
       ) : (
         <>
           <Trash2 size={16} />
-          Excluir Veículo
+          <span className="sm:hidden">Excluir</span>
+          <span className="hidden sm:inline">Excluir Veículo</span>
         </>
       )}
     </button>

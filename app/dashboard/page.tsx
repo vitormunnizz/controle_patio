@@ -1,155 +1,216 @@
+import { and, count, eq, gte, lte } from "drizzle-orm";
+import { CalendarDays, CarFront, CheckCircle2, Clock3, TrendingUp } from "lucide-react";
 import { db } from "@/db";
 import { status as statusTable, veiculos as veiculosTable } from "@/db/schema";
-import { count, eq, and, gte, lte } from "drizzle-orm";
-import { StatusChart } from "@/components/DashboardCharts";
 import { DashboardDateFilter } from "@/components/DashboardDateFilter";
-import Link from "next/link";
-import { ArrowLeft, Car, CheckCircle2, Clock, TrendingUp, BarChart3, Table } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { cn, statusStyles } from "@/lib/utils";
-import { Suspense } from "react";
 
-interface PageProps { searchParams: Promise<{ from?: string; to?: string }>; }
+type DashboardSearchParams = Promise<{ from?: string; to?: string }>;
 
-export default async function AnalyticsPage({ searchParams }: PageProps) {
+function isoDataLocal(data: Date) {
+  const ano = data.getFullYear();
+  const mes = String(data.getMonth() + 1).padStart(2, "0");
+  const dia = String(data.getDate()).padStart(2, "0");
+  return ano + "-" + mes + "-" + dia;
+}
+
+function validarData(data?: string) {
+  if (!data || !/^\d{4}-\d{2}-\d{2}$/.test(data)) return null;
+  const [ano, mes, dia] = data.split("-").map(Number);
+  const dataUTC = new Date(Date.UTC(ano, mes - 1, dia));
+  if (dataUTC.getUTCFullYear() !== ano || dataUTC.getUTCMonth() !== mes - 1 || dataUTC.getUTCDate() !== dia) return null;
+  return data;
+}
+
+function subtrairDias(dataIso: string, dias: number) {
+  const [ano, mes, dia] = dataIso.split("-").map(Number);
+  const data = new Date(ano, mes - 1, dia);
+  data.setDate(data.getDate() - dias);
+  return isoDataLocal(data);
+}
+
+export default async function AnalyticsPage({
+  searchParams,
+}: {
+  searchParams: DashboardSearchParams;
+}) {
   const { from, to } = await searchParams;
+  const hoje = isoDataLocal(new Date());
+  const dataFim = validarData(to) ?? hoje;
+  const dataInicio = validarData(from) ?? subtrairDias(dataFim, 29);
+  const periodoValido = dataInicio <= dataFim;
 
-  // Garantir limites completos de data no formato YYYY-MM-DD
-  const hoje = new Date();
-  const data30DiasAtras = new Date(hoje);
-  data30DiasAtras.setDate(hoje.getDate() - 30);
+  const statusQuery = periodoValido
+    ? await db
+        .select({ nome: statusTable.nome, total: count(veiculosTable.id) })
+        .from(statusTable)
+        .leftJoin(
+          veiculosTable,
+          and(
+            eq(statusTable.id, veiculosTable.status_id),
+            gte(veiculosTable.data_entrada, dataInicio),
+            lte(veiculosTable.data_entrada, dataFim),
+          ),
+        )
+        .groupBy(statusTable.id, statusTable.nome)
+        .orderBy(statusTable.ordem)
+    : [];
 
-  const dataInicioStr = from || data30DiasAtras.toISOString().split('T')[0];
-  const dataFimStr = to || hoje.toISOString().split('T')[0];
-
-  // Trata o limite de fim até o final do dia (23:59:59)
-  const filtroData = and(
-    gte(veiculosTable.data_entrada, `${dataInicioStr} 00:00:00`),
-    lte(veiculosTable.data_entrada, `${dataFimStr} 23:59:59`)
-  );
-
-  // Queries
-  const [totalResult] = await db.select({ value: count() }).from(veiculosTable).where(filtroData);
-
-  const statusQuery = await db.select({ 
-    name: statusTable.nome, 
-    total: count(veiculosTable.id) 
-  })
-  .from(statusTable)
-  .leftJoin(veiculosTable, and(eq(statusTable.id, veiculosTable.status_id), filtroData))
-  .groupBy(statusTable.id, statusTable.nome)
-  .orderBy(statusTable.ordem);
-
-  const statusData = statusQuery.map(s => ({ name: s.name, total: Number(s.total) }));
-  const totalVeiculos = Number(totalResult?.value || 0);
+  const statusData = statusQuery.map((item) => ({ nome: item.nome, total: Number(item.total) }));
+  const statusAtivos = statusData.filter((item) => item.total > 0);
+  const statusVazios = statusData.filter((item) => item.total === 0);
+  const totalVeiculos = statusData.reduce((total, item) => total + item.total, 0);
   const totalFinalizados = statusData
-    .filter((item) => item.name === "Finalizado" || item.name === "Entregue")
+    .filter((item) => item.nome === "Finalizado" || item.nome === "Entregue")
     .reduce((total, item) => total + item.total, 0);
+  const diasPeriodo = periodoValido
+    ? Math.floor((Date.parse(dataFim + "T00:00:00Z") - Date.parse(dataInicio + "T00:00:00Z")) / 86_400_000) + 1
+    : 0;
+  const taxaFinalizacao = totalVeiculos > 0 ? Math.round((totalFinalizados / totalVeiculos) * 100) : 0;
 
   return (
-    <main className="app-background min-h-screen lg:h-screen p-2.5 sm:p-3 font-sans overflow-x-hidden lg:overflow-hidden">
-      <div className="max-w-6xl mx-auto h-full flex flex-col gap-2.5">
-        
-        {/* HEADER RESPONSIVO */}
-        <header className="bg-gradient-to-r from-jc-navy via-[#073b83] to-jc-blue p-2.5 sm:px-4 rounded-xl flex flex-col sm:flex-row items-center justify-between text-white shadow-md shrink-0 border border-white/10 gap-2">
-          <div className="flex items-center gap-3 px-1 w-full sm:w-auto justify-between sm:justify-start">
-            <div className="flex items-center gap-2.5">
-              <Link href="/" className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all shrink-0 flex items-center justify-center">
-                <ArrowLeft size={13} strokeWidth={3} />
-              </Link>
-              
-              <div className="h-5 w-[1px] bg-white/20" />
+    <main className="app-background page-main text-slate-900">
+      <div className="page-container page-stack">
+        <PageHeader backHref="/" backLabel="Voltar para a oficina" title="Dashboard" />
 
-              <h1 className="text-base sm:text-lg font-extrabold uppercase tracking-tight text-white">
-                Dashboard
-              </h1>
+        <section aria-label="Filtro de período" className="flex flex-col gap-2 rounded-2xl border border-white bg-white/95 p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-4 sm:py-3">
+          <div className="flex shrink-0 items-center gap-2 px-1 text-xs font-extrabold uppercase tracking-wider text-slate-500">
+            <CalendarDays size={15} className="text-jc-blue" />
+            Período da análise
+          </div>
+          <div className="min-w-0 flex-1 sm:max-w-[900px]">
+            <DashboardDateFilter initialFrom={dataInicio} initialTo={dataFim} />
+          </div>
+          {!periodoValido && (
+            <p role="alert" className="mt-2 text-sm font-semibold text-red-700">
+              A data inicial precisa ser anterior à data final.
+            </p>
+          )}
+        </section>
+
+        <section aria-label="Indicadores do período" className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+          <Indicador titulo="Entradas" valor={totalVeiculos} detalhe="veículos no período" icone={<CarFront size={18} />} cor="blue" />
+          <Indicador titulo="Finalizados" valor={totalFinalizados} detalhe="finalizados ou entregues" icone={<CheckCircle2 size={18} />} cor="green" />
+          <Indicador titulo="Taxa de finalização" valor={taxaFinalizacao} unidade="%" detalhe="do total de entradas" icone={<TrendingUp size={18} />} cor="purple" />
+          <Indicador titulo="Período" valor={diasPeriodo} unidade="dias" detalhe="intervalo selecionado" icone={<Clock3 size={18} />} cor="slate" />
+        </section>
+
+        <section aria-labelledby="etapas-titulo" className="rounded-2xl border border-white bg-white/95 p-4 shadow-[0_8px_28px_rgba(15,23,42,0.055)] sm:p-5">
+          <div className="mb-3 flex flex-col gap-1 sm:mb-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 id="etapas-titulo" className="page-section-title">Veículos por etapa</h2>
             </div>
+            <p className="text-sm font-medium text-slate-500">
+              {totalVeiculos} {totalVeiculos === 1 ? "veículo encontrado" : "veículos encontrados"}
+            </p>
           </div>
 
-          <div className="w-full sm:w-auto flex justify-end">
-            <Suspense fallback={<div className="h-7 w-28 bg-white/5 rounded-lg animate-pulse" />}>
-              <DashboardDateFilter />
-            </Suspense>
-          </div>
-        </header>
-
-        {/* MÉTRICAS MINI */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 shrink-0">
-          <StatCard title="Entradas" value={totalVeiculos} icon={<Car size={18} />} color="text-jc-blue" bgColor="bg-blue-50" />
-          <StatCard title="Finalizados" value={totalFinalizados} icon={<CheckCircle2 size={18} />} color="text-green-600" bgColor="bg-green-50" />
-          <StatCard title="Taxa" value={totalVeiculos > 0 ? Math.round((totalFinalizados / totalVeiculos) * 100) : 0} unit="%" icon={<TrendingUp size={18} />} color="text-purple-600" bgColor="bg-purple-50" />
-          <StatCard title="Período" value={from ? (Math.ceil((new Date(dataFimStr).getTime() - new Date(dataInicioStr).getTime()) / (1000 * 3600 * 24))) : 30} unit="d" icon={<Clock size={18} />} color="text-slate-500" bgColor="bg-slate-200" />
-        </div>
-
-        {/* 1. GRÁFICO VISUAL (TOPO - OCUPA O ESPAÇO DISPONÍVEL) */}
-        <div className="bg-gradient-to-br from-white to-[#fafdff] p-3 rounded-xl border border-white shadow-[0_5px_18px_rgba(15,23,42,0.05)] flex flex-col flex-1 min-h-0">
-          <div className="flex items-center gap-2 mb-1 shrink-0">
-              <BarChart3 className="text-jc-blue" size={14} />
-              <h3 className="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider">Distribuição por Status</h3>
-          </div>
-          <div className="flex-1 w-full min-h-0">
-            <StatusChart data={statusData} />
-          </div>
-        </div>
-
-        {/* 2. TABELA DETALHADA DO FLUXO (EMBAIXO - TAMANHO COMPACTO FIXO) */}
-        <div className="bg-white/95 p-3 rounded-xl border border-white shadow-[0_5px_18px_rgba(15,23,42,0.05)] flex flex-col shrink-0">
-          <div className="flex items-center justify-between mb-1.5">
-            <div className="flex items-center gap-2">
-                <Table className="text-jc-blue" size={14} />
-                <h3 className="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider">Resumo do Fluxo</h3>
+          {totalVeiculos === 0 ? (
+            <div className="flex min-h-32 flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 px-5 py-5 text-center">
+              <CalendarDays size={22} className="text-slate-300" />
+              <p className="mt-2 text-sm font-bold text-slate-600">
+                {periodoValido ? "Nenhum veículo neste período" : "Confira as datas selecionadas"}
+              </p>
+              <p className="mt-1 max-w-md text-sm text-slate-500">
+                {periodoValido
+                  ? "Tente ampliar o intervalo para ver o movimento da oficina."
+                  : "A data inicial precisa ser anterior à data final para exibir os resultados."}
+              </p>
             </div>
-          </div>
+          ) : (
+            <div className={cn("grid grid-cols-1 gap-3", statusAtivos.length > 1 && "sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4")}>
+              {statusAtivos.map((item) => (
+                <CartaoEtapa key={item.nome} nome={item.nome} total={item.total} totalGeral={totalVeiculos} />
+              ))}
+            </div>
+          )}
 
-          <div className="w-full">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-100 text-[8px] font-bold uppercase tracking-wider text-slate-500">
-                  <th className="py-1">Status</th>
-                  <th className="py-1 text-center">Quantidade</th>
-                  <th className="py-1 text-right">Proporção</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {statusData.map((s, idx) => {
-                  const style = statusStyles[s.name] || statusStyles["Recebido"];
-                  const percentual = totalVeiculos > 0 ? ((s.total / totalVeiculos) * 100).toFixed(0) : "0";
+          {totalVeiculos > 0 && statusVazios.length > 0 && (
+            <details className="mt-4 border-t border-slate-100 pt-3">
+              <summary className="w-fit cursor-pointer text-sm font-semibold text-slate-500 transition-colors hover:text-jc-blue">
+                Ver {statusVazios.length} {statusVazios.length === 1 ? "etapa sem veículos" : "etapas sem veículos"}
+              </summary>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {statusVazios.map((item) => {
+                  const estilo = statusStyles[item.nome] || statusStyles["Recebido"];
                   return (
-                    <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="py-1 pr-2">
-                        <div className="flex items-center gap-2">
-                          <div className={cn("w-2 h-2 rounded-full shrink-0", style.dot)} />
-                          <span className={cn("font-bold uppercase text-[10px]", style.text)}>
-                            {s.name}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-1 text-center font-black text-jc-navy text-xs">{s.total}</td>
-                      <td className="py-1 text-right font-semibold text-slate-500 text-[10px]">{percentual}%</td>
-                    </tr>
+                    <span key={item.nome} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-600">
+                      <span className={cn("h-2 w-2 rounded-full", estilo.dot)} />
+                      {item.nome} · 0
+                    </span>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
+              </div>
+            </details>
+          )}
+        </section>
       </div>
     </main>
   );
 }
 
-function StatCard({ title, value, unit = "", icon, color, bgColor }: { title: string, value: number, unit?: string, icon: React.ReactNode, color: string, bgColor: string }) {
+function Indicador({
+  titulo,
+  valor,
+  unidade,
+  detalhe,
+  icone,
+  cor,
+}: {
+  titulo: string;
+  valor: number;
+  unidade?: string;
+  detalhe: string;
+  icone: React.ReactNode;
+  cor: "blue" | "green" | "purple" | "slate";
+}) {
+  const cores = {
+    blue: "bg-blue-50 text-jc-blue",
+    green: "bg-green-50 text-green-700",
+    purple: "bg-purple-50 text-purple-700",
+    slate: "bg-slate-100 text-slate-600",
+  };
+
   return (
-    <div className="bg-white/95 p-2 rounded-lg border border-white flex items-center gap-2 shadow-[0_3px_12px_rgba(15,23,42,0.06)]">
-      <div className={cn("w-7 h-7 rounded-md flex items-center justify-center shrink-0", bgColor, color)}>
-        {icon}
+    <article className="grid min-w-0 grid-cols-[32px_minmax(0,1fr)] gap-x-2 rounded-2xl border border-slate-100 bg-white p-2.5 shadow-[0_4px_16px_rgba(15,23,42,0.04)] sm:grid-cols-[36px_minmax(0,1fr)] sm:gap-x-3 sm:p-3">
+      <div className={cn("row-span-3 mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg sm:h-9 sm:w-9 sm:rounded-xl", cores[cor])}>{icone}</div>
+      <p className="page-caption min-w-0 whitespace-normal font-bold uppercase leading-tight tracking-wide text-slate-500">{titulo}</p>
+      <p className="mt-0.5 flex items-baseline gap-1 text-lg font-black leading-none text-jc-navy sm:text-xl">
+        {valor}<span className="text-xs font-bold text-slate-400">{unidade}</span>
+      </p>
+      <p className="page-caption mt-0.5 min-w-0 whitespace-normal break-words leading-snug text-slate-500">{detalhe}</p>
+    </article>
+  );
+}
+
+function CartaoEtapa({ nome, total, totalGeral }: { nome: string; total: number; totalGeral: number }) {
+  const estilo = statusStyles[nome] || statusStyles["Recebido"];
+  const percentual = totalGeral > 0 ? Math.round((total / totalGeral) * 100) : 0;
+
+  return (
+    <article className={cn("rounded-2xl border p-3 transition-shadow hover:shadow-md sm:p-3.5", estilo.border, "bg-white")}>
+      <div className="flex min-h-10 items-start justify-between gap-2">
+        <div className="flex min-w-0 items-start gap-2.5">
+          <span className={cn("mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full", estilo.dot)} />
+          <h3 className={cn("text-xs font-extrabold leading-snug sm:text-sm", estilo.text)}>{nome}</h3>
+        </div>
+        <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-xs font-bold", estilo.bg, estilo.text)}>{percentual}%</span>
       </div>
-      <div className="min-w-0">
-        <p className="text-[8px] font-bold text-slate-500 uppercase tracking-wider leading-none mb-0.5 truncate">{title}</p>
-        <p className="text-sm font-extrabold text-jc-navy leading-none">
-          {value}<span className="text-[9px] opacity-50 ml-0.5">{unit}</span>
-        </p>
+      <div className="mt-2 flex items-baseline gap-2">
+        <span className="text-xl font-black leading-none text-slate-900">{total}</span>
+        <span className="text-xs font-medium text-slate-500">{total === 1 ? "veículo" : "veículos"}</span>
       </div>
-    </div>
+      <div
+        role="progressbar"
+        aria-label={percentual + "% dos veículos estão em " + nome}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percentual}
+        className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100"
+      >
+        <div className={cn("h-full rounded-full transition-[width] duration-500", estilo.dot)} style={{ width: percentual + "%" }} />
+      </div>
+    </article>
   );
 }

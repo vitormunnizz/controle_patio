@@ -3,7 +3,7 @@ import { status as statusTable, veiculos as veiculosTable } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { atualizarVeiculo } from "./actions";
 import Link from "next/link";
-import { ArrowLeft, Car, User, Calendar, Camera, FileDown } from "lucide-react";
+import { Car, User, Calendar, Camera, FileDown } from "lucide-react";
 import { notFound } from "next/navigation";
 import { UploadFoto } from "@/components/UploadFoto";
 import { BotaoExcluir } from "@/components/BotaoExcluir";
@@ -11,6 +11,7 @@ import { GaleriaFotos } from "@/components/GaleriaFotos";
 import { FotoSerializada } from "@/types/kanban";
 import { AvisoChecklistSalvo } from "@/components/AvisoChecklistSalvo";
 import { NavegacaoChecklist } from "@/components/NavegacaoChecklist";
+import { PageHeader } from "@/components/PageHeader";
 
 export default async function EditarPage({
   params,
@@ -50,32 +51,24 @@ export default async function EditarPage({
   }));
 
   return (
-    <main className="app-background min-h-screen p-4 sm:p-6 font-sans antialiased text-slate-900 overflow-x-hidden">
-      <div className="max-w-6xl mx-auto space-y-4 w-full min-w-0">
-
-        {/* HEADER SLIM RESPONSIVO */}
-        <header className="bg-gradient-to-r from-jc-navy via-[#073b83] to-jc-blue p-3 rounded-2xl flex items-center justify-between text-white shadow-md border border-white/10 border-b-2 border-b-jc-yellow/80 gap-2 w-full min-w-0">
-          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-            <Link href="/" className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all flex items-center justify-center shrink-0">
-              <ArrowLeft size={18} strokeWidth={3} />
-            </Link>
-            <div className="h-6 w-[1px] bg-white/20 shrink-0" />
-            <h1 className="text-xs sm:text-base font-black uppercase italic tracking-tighter text-jc-whitte truncate">
-              Ficha Técnica
-            </h1>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
+    <main className="app-background page-main font-sans antialiased text-slate-900">
+      <div className="page-container page-stack min-w-0">
+        <PageHeader
+          backHref="/"
+          backLabel="Voltar para a oficina"
+          title="Ficha técnica"
+          rightContent={(
+            <>
             <Link
               href={`/veiculos/${id}/pdf`}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-white/20"
+              className="page-header-action"
             >
-              <FileDown size={14} /> Gerar PDF
+              <FileDown size={16} /> <span className="sm:hidden">PDF</span><span className="hidden sm:inline">Gerar PDF</span>
             </Link>
-            <span className="text-[9px] sm:text-[10px] font-black bg-white text-jc-navy px-2 sm:px-3 py-1 rounded-lg uppercase tracking-widest shadow-sm">
-              Placa: {veiculo.placa}
-            </span>
-          </div>
-        </header>
+            <span className="page-header-badge hidden sm:inline-flex">{veiculo.placa}</span>
+            </>
+          )}
+        />
 
         {checklist === "salvo" && (
           <AvisoChecklistSalvo />
@@ -99,15 +92,16 @@ export default async function EditarPage({
           <div className="lg:col-span-7 bg-white/95 rounded-2xl sm:rounded-3xl shadow-[0_10px_30px_rgba(15,23,42,0.06)] border border-white overflow-hidden w-full min-w-0">
             <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
               <Car size={16} className="text-jc-blue shrink-0" />
-              <h2 className="text-xs font-extrabold text-slate-600 uppercase tracking-wider truncate">Informações Gerais</h2>
+              <h2 className="page-section-title truncate uppercase">Informações gerais</h2>
             </div>
 
-            <form id={`editar-veiculo-${id}`} action={atualizarVeiculo.bind(null, id)} className="p-3 sm:p-6 space-y-4 w-full min-w-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full min-w-0">
+            <form id={`editar-veiculo-${id}`} action={atualizarVeiculo.bind(null, id)} className="p-3 sm:p-5 space-y-3 w-full min-w-0">
+              <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-3 sm:gap-4 w-full min-w-0">
                 <div className="space-y-1 min-w-0">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 truncate">Placa</label>
+                  <label htmlFor="editar-placa" className="page-field-label block truncate ml-1 text-slate-500 uppercase tracking-wide">Placa</label>
                   <input
                     name="placa"
+                    id="editar-placa"
                     defaultValue={veiculo.placa}
                     required
                     maxLength={7}
@@ -115,9 +109,10 @@ export default async function EditarPage({
                   />
                 </div>
                 <div className="space-y-1 min-w-0">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 truncate">Status</label>
+                  <label htmlFor="editar-status" className="page-field-label block truncate ml-1 text-slate-500 uppercase tracking-wide">Status</label>
                   <select
                     name="status_id"
+                    id="editar-status"
                     defaultValue={veiculo.status_id}
                     className="w-full border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue cursor-pointer text-sm truncate"
                   >
@@ -126,24 +121,26 @@ export default async function EditarPage({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full min-w-0">
+              <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-3 sm:gap-4 w-full min-w-0">
                 <div className="space-y-1 min-w-0">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 flex items-center gap-1 truncate">
+                  <label htmlFor="editar-modelo" className="page-field-label flex items-center gap-1 truncate ml-1 text-slate-500 uppercase tracking-wide">
                     <Car size={10} className="shrink-0" /> Modelo
                   </label>
                   <input
                     name="modelo"
+                    id="editar-modelo"
                     defaultValue={veiculo.modelo}
                     required
                     className="w-full border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue text-sm"
                   />
                 </div>
                 <div className="space-y-1 min-w-0">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 flex items-center gap-1 truncate">
+                  <label htmlFor="editar-cliente" className="page-field-label flex items-center gap-1 truncate ml-1 text-slate-500 uppercase tracking-wide">
                     <User size={10} className="shrink-0" /> Cliente
                   </label>
                   <input
                     name="cliente"
+                    id="editar-cliente"
                     defaultValue={veiculo.cliente}
                     required
                     className="w-full border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl font-bold text-slate-700 outline-none focus:border-jc-blue text-sm"
@@ -151,13 +148,14 @@ export default async function EditarPage({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full min-w-0">
+              <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-3 sm:gap-4 w-full min-w-0">
                 <div className="space-y-1 min-w-0">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 flex items-center gap-1 truncate">
+                  <label htmlFor="editar-data-entrada" className="page-field-label flex items-center gap-1 truncate ml-1 text-slate-500 uppercase tracking-wide">
                     <Calendar size={10} className="shrink-0" /> Entrada
                   </label>
                   <input
                     name="data_entrada"
+                    id="editar-data-entrada"
                     type="date"
                     defaultValue={formatarDataInput(veiculo.data_entrada)}
                     required
@@ -165,11 +163,12 @@ export default async function EditarPage({
                   />
                 </div>
                 <div className="space-y-1 min-w-0">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wide block ml-1 flex items-center gap-1 truncate">
+                  <label htmlFor="editar-data-prevista" className="page-field-label flex items-center gap-1 truncate ml-1 text-slate-500 uppercase tracking-wide">
                     <Calendar size={10} className="shrink-0" /> Previsão
                   </label>
                   <input
                     name="data_prevista_entrega"
+                    id="editar-data-prevista"
                     type="date"
                     defaultValue={formatarDataInput(veiculo.data_prevista_entrega)}
                     className="w-full min-w-0 border border-slate-200 bg-white shadow-sm p-2.5 rounded-xl font-semibold text-slate-700 text-sm outline-none focus:border-jc-blue appearance-none"
@@ -180,7 +179,7 @@ export default async function EditarPage({
               <NavegacaoChecklist veiculoId={id} erro={erro} />
 
               <div className="space-y-1 w-full min-w-0">
-                <label htmlFor="observacoes" className="mb-1.5 ml-1 block truncate text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                <label htmlFor="observacoes" className="page-field-label mb-1.5 ml-1 block truncate uppercase tracking-wide text-slate-500">
                   Observações Técnicas
                 </label>
                 <textarea
@@ -192,10 +191,10 @@ export default async function EditarPage({
                 />
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-50 w-full min-w-0">
+              <div className="flex flex-col min-[360px]:flex-row gap-3 pt-4 border-t border-slate-50 w-full min-w-0">
                 <button
                   type="submit"
-                  className="flex-1 bg-jc-yellow/80 hover:bg-jc-yellow active:bg-jc-yellow/80 text-slate-900 font-black uppercase text-[10px] tracking-widest py-3.5 sm:py-4 rounded-2xl transition-colors shadow-md active:scale-95 cursor-pointer text-center"
+                  className="flex-1 bg-jc-yellow/80 hover:bg-jc-yellow active:bg-jc-yellow/80 text-slate-900 font-black uppercase text-sm tracking-wide py-3.5 sm:py-4 rounded-2xl transition-colors shadow-md active:scale-95 cursor-pointer text-center"
                 >
                   Salvar Alterações
                 </button>
@@ -204,18 +203,28 @@ export default async function EditarPage({
             </form>
           </div>
 
-          {/* COLUNA GALERIA (DIREITA) */}
-          <div className="lg:col-span-5 bg-white/95 p-4 sm:p-5 rounded-2xl sm:rounded-[32px] shadow-[0_10px_30px_rgba(15,23,42,0.06)] border border-white h-full flex flex-col w-full min-w-0 overflow-hidden">
+          {/* No celular, as fotos ficam recolhidas para não aparecer um cartão cortado. */}
+          <details className="rounded-2xl border border-white bg-white/95 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] lg:hidden">
+            <summary className="page-section-title cursor-pointer uppercase">Fotos do veículo</summary>
+            <div className="mt-4">
+              <div className="mb-4 flex justify-end">
+                <UploadFoto veiculoId={id} />
+              </div>
+              <GaleriaFotos fotos={fotosVeiculo} veiculoId={id} />
+            </div>
+          </details>
+
+          {/* Coluna da galeria em telas maiores */}
+          <div className="hidden lg:col-span-5 lg:flex bg-white/95 p-4 sm:p-5 rounded-2xl sm:rounded-[32px] shadow-[0_10px_30px_rgba(15,23,42,0.06)] border border-white flex-col w-full min-w-0 overflow-hidden">
             <div className="flex justify-between items-center mb-4 sm:mb-6 gap-2 min-w-0">
               <div className="flex items-center gap-2 min-w-0">
                 <Camera size={16} className="text-jc-blue shrink-0" />
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">Fotos do Veículo</h3>
+                <h3 className="page-section-title truncate uppercase">Fotos do veículo</h3>
               </div>
               <div className="shrink-0">
                 <UploadFoto veiculoId={id} />
               </div>
             </div>
-
             <div className="w-full min-w-0 overflow-hidden">
               <GaleriaFotos fotos={fotosVeiculo} veiculoId={id} />
             </div>

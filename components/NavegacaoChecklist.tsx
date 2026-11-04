@@ -62,7 +62,7 @@ export function NavegacaoChecklist({
     <Link
       href={`/veiculos/${veiculoId}/checklist`}
       onClick={preservarRascunho}
-      className="flex w-full items-center justify-center gap-2 rounded-2xl border-b-4 border-blue-900 bg-jc-blue px-5 py-3.5 text-xs font-black uppercase tracking-wide text-white shadow-sm transition-colors hover:bg-jc-navy active:scale-[0.99]"
+      className="flex w-full items-center justify-center gap-2 rounded-2xl border-b-4 border-blue-900 bg-jc-blue px-5 py-3.5 text-sm font-black uppercase tracking-wide text-white shadow-sm transition-colors hover:bg-jc-navy active:scale-[0.99]"
     >
       <ClipboardCheck size={18} strokeWidth={2.5} className="text-white" />
       Abrir checklist

@@ -63,16 +63,17 @@ export function AssinaturaVeiculo({ emitidoEm }: { emitidoEm: string }) {
     <footer className="mt-5 grid grid-cols-1 gap-4 border-t border-slate-200 pt-4 sm:grid-cols-[1fr_auto] sm:items-end">
       <div className="w-full">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-[10px] font-extrabold uppercase tracking-wide text-jc-navy">Assinatura / conferência</h2>
+          <h2 className="page-section-title uppercase">Assinatura / conferência</h2>
           <button
             type="button"
+            aria-label="Limpar assinatura"
             onClick={limparAssinatura}
-            className="print-ui cursor-pointer rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase text-slate-600 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+            className="print-ui cursor-pointer whitespace-nowrap rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold uppercase text-slate-600 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-700"
           >
-            Limpar assinatura
+            <span className="sm:hidden">Limpar</span><span className="hidden sm:inline">Limpar assinatura</span>
           </button>
         </div>
-        <p className="print-ui mt-1 text-[10px] text-slate-500">Assine abaixo usando o mouse ou a tela de toque.</p>
+        <p className="page-caption print-ui mt-1 text-slate-500">Assine abaixo usando o mouse ou a tela de toque.</p>
         <div className="mt-2 w-full max-w-3xl rounded-xl border-2 border-blue-200 bg-blue-50 p-2 shadow-inner sm:p-3">
           <canvas
             ref={canvasRef}
@@ -87,12 +88,12 @@ export function AssinaturaVeiculo({ emitidoEm }: { emitidoEm: string }) {
           />
         </div>
         <div className="print-ui mt-1 flex w-full max-w-3xl items-center justify-between gap-3">
-          <span role="status" className="text-[10px] text-slate-500">
+          <span role="status" className="page-caption text-slate-500">
             {assinada ? "Assinatura pronta para o PDF." : "A assinatura é opcional."}
           </span>
         </div>
       </div>
-      <p className="text-[9px] text-slate-500">Emitido em {emitidoEm}</p>
+      <p className="page-caption text-slate-500">Emitido em {emitidoEm}</p>
     </footer>
   );
 }

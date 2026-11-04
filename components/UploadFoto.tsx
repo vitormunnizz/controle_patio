@@ -47,7 +47,7 @@ export function UploadFoto({ veiculoId }: { veiculoId: number }) {
       />
       <label
         htmlFor={`upload-foto-${veiculoId}`}
-        className="h-9 px-4 bg-jc-blue hover:bg-jc-navy text-white rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer transition-all flex items-center gap-2 shadow-sm"
+        className="h-10 px-4 bg-jc-blue hover:bg-jc-navy text-white rounded-xl text-xs font-black uppercase tracking-wide cursor-pointer transition-all flex items-center gap-2 shadow-sm"
       >
         {loading ? <Loader2 className="animate-spin" size={14} /> : <Camera size={14} />}
         {loading ? "Salvando..." : "Adicionar Foto"}

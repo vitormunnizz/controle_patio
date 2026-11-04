@@ -10,6 +10,7 @@ import { existsSync } from "fs";
 import path from "path";
 import { ITENS_VEICULO } from "@/lib/checklist-tecnico";
 import { isUniqueConstraintViolation } from "@/lib/db-errors";
+import { getStore } from "@netlify/blobs";
 
 // --- AUXILIAR: SALVAR ARQUIVO LOCALMENTE ---
 async function salvarArquivoLocal(buffer: Buffer, nomeArquivo: string): Promise<string> {
@@ -36,6 +37,18 @@ async function deletarArquivoLocal(urlRelativa: string) {
     } catch (error) {
       console.warn(`Aviso: Não foi possível remover o arquivo local ${caminhoArquivo}:`, error);
     }
+  }
+}
+
+function usarNetlifyBlobs() {
+  return process.env.NETLIFY === "true";
+}
+
+async function excluirFoto(url: string) {
+  if (url.startsWith("/media/")) {
+    await getStore("vehicle-photos").delete(path.basename(url));
+  } else if (!usarNetlifyBlobs()) {
+    await deletarArquivoLocal(url);
   }
 }
 
@@ -97,8 +110,19 @@ export async function salvarFotoLocal(veiculoId: number, formData: FormData) {
     const extensao = ".webp";
     const nomeArquivo = `VEICULO_${veiculoId}_${Date.now()}${extensao}`;
 
-    // 1. Salva a foto na pasta public/uploads
-    const publicUrl = await salvarArquivoLocal(buffer, nomeArquivo);
+    // Netlify Blobs persiste fotos entre execuções serverless e deploys.
+    const publicUrl = usarNetlifyBlobs()
+      ? `/media/${nomeArquivo}`
+      : await salvarArquivoLocal(buffer, nomeArquivo);
+    if (usarNetlifyBlobs()) {
+      const imageData = buffer.buffer.slice(
+        buffer.byteOffset,
+        buffer.byteOffset + buffer.byteLength,
+      );
+      await getStore("vehicle-photos").set(nomeArquivo, imageData, {
+        metadata: { contentType: "image/webp" },
+      });
+    }
     fotoSalva = publicUrl;
 
     // 2. Salva a URL local (/uploads/VEICULO_...) no banco de dados
@@ -110,7 +134,7 @@ export async function salvarFotoLocal(veiculoId: number, formData: FormData) {
     revalidatePath(`/veiculos/${veiculoId}`);
     revalidatePath("/");
   } catch (error) {
-    if (fotoSalva) await deletarArquivoLocal(fotoSalva);
+    if (fotoSalva) await excluirFoto(fotoSalva);
     console.error("Erro no upload local:", error);
     throw new Error("Não foi possível salvar a foto.");
   }
@@ -119,7 +143,7 @@ export async function salvarFotoLocal(veiculoId: number, formData: FormData) {
 // --- AÇÃO: DELETAR FOTO LOCAL E DO BANCO ---
 export async function deletarFotoLocal(fotoId: number, veiculoId: number, url: string) {
   // 1. Apaga o arquivo físico da pasta public/uploads
-  await deletarArquivoLocal(url);
+  await excluirFoto(url);
 
   // 2. Remove o registro do Banco Local
   await db.delete(fotos).where(eq(fotos.id, fotoId));
@@ -139,7 +163,7 @@ export async function excluirVeiculo(id: number) {
     // 2. Apaga os arquivos físicos locais de cada foto
     for (const foto of fotosVeiculo) {
       if (foto.url) {
-        await deletarArquivoLocal(foto.url);
+        await excluirFoto(foto.url);
       }
     }
 

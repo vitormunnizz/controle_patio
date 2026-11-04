@@ -38,7 +38,7 @@ export function SearchVeiculos() {
       </div>
       <button
         type="submit"
-        className="h-11 px-4 bg-jc-navy cursor-pointer text-white rounded-xl text-[11px] font-bold uppercase tracking-wide shrink-0 hover:bg-jc-blue transition-colors"
+        className="h-11 px-4 bg-jc-navy cursor-pointer text-white rounded-xl text-xs font-bold uppercase tracking-wide shrink-0 hover:bg-jc-blue transition-colors"
       >
         Buscar
       </button>
