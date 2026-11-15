@@ -12,5 +12,6 @@ export const statusStyles: Record<string, { bg: string, border: string, text: st
   "Aguardando peças": { bg: "bg-red-50", border: "border-red-100", text: "text-red-700", dot: "bg-red-500" },
   "Em manutenção": { bg: "bg-yellow-50", border: "border-yellow-200", text: "text-yellow-800", dot: "bg-[#FFD700]" },
   "Finalizado": { bg: "bg-green-50", border: "border-green-100", text: "text-green-700", dot: "bg-green-500" },
+  "Aguardando nota fiscal": { bg: "bg-cyan-50", border: "border-cyan-100", text: "text-cyan-800", dot: "bg-cyan-500" },
   "Entregue": { bg: "bg-slate-100", border: "border-slate-200", text: "text-slate-900", dot: "bg-slate-900" },
 };

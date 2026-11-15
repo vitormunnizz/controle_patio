@@ -62,7 +62,7 @@ export default async function AnalyticsPage({
   const statusVazios = statusData.filter((item) => item.total === 0);
   const totalVeiculos = statusData.reduce((total, item) => total + item.total, 0);
   const totalFinalizados = statusData
-    .filter((item) => item.nome === "Finalizado" || item.nome === "Entregue")
+    .filter((item) => ["Finalizado", "Aguardando nota fiscal", "Entregue"].includes(item.nome))
     .reduce((total, item) => total + item.total, 0);
   const diasPeriodo = periodoValido
     ? Math.floor((Date.parse(dataFim + "T00:00:00Z") - Date.parse(dataInicio + "T00:00:00Z")) / 86_400_000) + 1
@@ -91,7 +91,7 @@ export default async function AnalyticsPage({
 
         <section aria-label="Indicadores do período" className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
           <Indicador titulo="Entradas" valor={totalVeiculos} detalhe="veículos no período" icone={<CarFront size={18} />} cor="blue" />
-          <Indicador titulo="Finalizados" valor={totalFinalizados} detalhe="finalizados ou entregues" icone={<CheckCircle2 size={18} />} cor="green" />
+          <Indicador titulo="Finalizados" valor={totalFinalizados} detalhe="concluídos, aguardando NF ou entregues" icone={<CheckCircle2 size={18} />} cor="green" />
           <Indicador titulo="Taxa de finalização" valor={taxaFinalizacao} unidade="%" detalhe="do total de entradas" icone={<TrendingUp size={18} />} cor="purple" />
           <Indicador titulo="Período" valor={diasPeriodo} unidade="dias" detalhe="intervalo selecionado" icone={<Clock3 size={18} />} cor="slate" />
         </section>

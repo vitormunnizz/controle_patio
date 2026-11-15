@@ -41,7 +41,13 @@ async function deletarArquivoLocal(urlRelativa: string) {
 }
 
 function usarNetlifyBlobs() {
-  return process.env.NETLIFY === "true";
+  // `NETLIFY` pode existir apenas no ambiente de build. SITE_ID é exposto
+  // no runtime das Functions e identifica com segurança uma execução na Netlify.
+  return Boolean(
+    process.env.SITE_ID ||
+    process.env.NETLIFY_SITE_ID ||
+    process.env.NETLIFY === "true"
+  );
 }
 
 async function excluirFoto(url: string) {

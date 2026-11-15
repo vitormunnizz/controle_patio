@@ -36,6 +36,7 @@ yarn-error.log*
 
 # vercel
 .vercel
+/jc-pneus-netlify-drop.zip
 
 # typescript
 *.tsbuildinfo

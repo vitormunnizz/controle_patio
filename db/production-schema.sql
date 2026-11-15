@@ -42,5 +42,6 @@ INSERT INTO status (nome, ordem) VALUES
   ('Aguardando peças', 4),
   ('Em manutenção', 5),
   ('Finalizado', 6),
-  ('Entregue', 7)
-ON CONFLICT (nome) DO NOTHING;
+  ('Aguardando nota fiscal', 7),
+  ('Entregue', 8)
+ON CONFLICT (nome) DO UPDATE SET ordem = EXCLUDED.ordem;
