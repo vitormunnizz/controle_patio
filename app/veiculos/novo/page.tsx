@@ -28,9 +28,9 @@ export default async function NovoVeiculoPage({
           </div>
 
           <form action={criarVeiculo} className="p-3 sm:p-5 space-y-3 sm:space-y-4 w-full min-w-0">
-            {erro === "placa-existente" && (
-              <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
-                Já existe um veículo cadastrado com essa placa. Confira a placa ou abra o cadastro existente para editá-lo.
+            {erro === "placa-repetida" && (
+              <p role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-800">
+                O banco ainda precisa ser atualizado para aceitar mais de um atendimento com a mesma placa.
               </p>
             )}
             {erro === "salvar" && (

@@ -45,8 +45,7 @@ async function inserirVeiculoComTratamentoDeErro(formData: FormData) {
   try {
     return await inserirVeiculo(formData);
   } catch (error) {
-    if (isUniqueConstraintViolation(error)) redirect("/veiculos/novo?erro=placa-existente");
-
+    if (isUniqueConstraintViolation(error)) redirect("/veiculos/novo?erro=placa-repetida");
     console.error("Falha ao cadastrar veículo:", error);
     redirect("/veiculos/novo?erro=salvar");
   }

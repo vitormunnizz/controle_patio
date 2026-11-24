@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { X, Trash2, Camera, Loader2 } from "lucide-react";
+import { X, Trash2, Camera, Loader2, Download } from "lucide-react";
 import { deletarFotoLocal } from "@/app/veiculos/[id]/actions";
 import { FotoSerializada } from "@/types/kanban";
 
@@ -69,6 +69,16 @@ export function GaleriaFotos({ fotos, veiculoId }: { fotos: FotoSerializada[], v
               onClick={() => setImgZoom(foto.url)}
               className="absolute inset-0 z-10 cursor-zoom-in"
             />
+
+            <a
+              href={foto.url}
+              download={`veiculo-${veiculoId}-foto-${foto.id}.webp`}
+              aria-label={`Baixar foto ${foto.id} do veículo`}
+              title="Baixar foto"
+              className="absolute top-2 left-2 z-20 rounded-xl bg-jc-blue p-2 text-white transition-all hover:bg-jc-navy cursor-pointer opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+            >
+              <Download size={14} />
+            </a>
 
             {/* 
               Botão de exclusão:

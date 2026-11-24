@@ -8,7 +8,7 @@ export const status = pgTable("status", {
 
 export const veiculos = pgTable("veiculos", {
   id: serial("id").primaryKey().notNull(),
-  placa: varchar("placa", { length: 10 }).notNull().unique(), // Adicionado .unique()
+  placa: varchar("placa", { length: 10 }).notNull(),
   modelo: varchar("modelo", { length: 100 }).notNull(),
   cliente: varchar("cliente", { length: 150 }).notNull(),
   data_entrada: date("data_entrada").notNull(),

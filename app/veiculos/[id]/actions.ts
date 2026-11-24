@@ -71,7 +71,7 @@ export async function atualizarVeiculo(id: number, formData: FormData) {
       observacoes: formData.get("observacoes") as string,
     }).where(eq(veiculos.id, id));
   } catch (error) {
-    if (isUniqueConstraintViolation(error)) redirect(`/veiculos/${id}?erro=placa-existente`);
+    if (isUniqueConstraintViolation(error)) redirect(`/veiculos/${id}?erro=placa-repetida`);
     console.error("Falha ao atualizar veículo:", error);
     redirect(`/veiculos/${id}?erro=salvar`);
   }

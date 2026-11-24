@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS status (
 
 CREATE TABLE IF NOT EXISTS veiculos (
   id serial PRIMARY KEY,
-  placa varchar(10) NOT NULL UNIQUE,
+  placa varchar(10) NOT NULL,
   modelo varchar(100) NOT NULL,
   cliente varchar(150) NOT NULL,
   data_entrada date NOT NULL,
@@ -19,6 +19,9 @@ CREATE TABLE IF NOT EXISTS veiculos (
   created_at timestamp DEFAULT now(),
   updated_at timestamp DEFAULT now()
 );
+
+ALTER TABLE veiculos DROP CONSTRAINT IF EXISTS veiculos_placa_key;
+ALTER TABLE veiculos DROP CONSTRAINT IF EXISTS veiculos_placa_unique;
 
 CREATE TABLE IF NOT EXISTS fotos (
   id serial PRIMARY KEY,
